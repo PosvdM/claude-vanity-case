@@ -34,15 +34,21 @@
 
 `target` 取 `settings`（`settings.json`）、`global`（`~/.claude.json`）或 `store`（`vanity.json`）。
 
-`ops` 的每一项是 `{ path, value }` 或 `{ path, delete: true }`。删除用单独的标记，因为 `value` 可以是 JSON 的 `null`。删除后变空的上级对象一并删除。上级存在但不是对象时（如 `"attribution": false` 时写 `attribution.commit`）返回错误。
+`ops` 的每一项是 `{ path, value }` 或 `{ path, delete: true }`。删除用单独的标记，因为 `value` 可以是 JSON 的 `null`。
+
+- 删除了键之后变空的上级对象一并删除。键本来不存在时什么都不动，原本就空的对象（如 `"env": {}`）保留。
+- 写入时上级不存在或为 `null`，就建成对象；上级是其他类型（如 `"attribution": false` 时写 `attribution.commit`）时返回错误。
 
 ## 文件读写
 
 - 每次修改都在 Rust 端重新读取文件再改，界面不会用手里的旧内容覆盖整个文件。Claude Code 自己也在频繁改写 `~/.claude.json`，这样冲突窗口只有读到写之间的几毫秒。
-- 写入前识别原文件的缩进（tab 或空格个数）、换行符（LF 或 CRLF）和末尾换行，写回时照用；`serde_json` 开启 `preserve_order`，键的顺序不变。输出是 `serde_json` 的多行格式，数组每项一行，原文件里单行的数组会被展开。
-- 先写同目录的 `<文件>.vanity-tmp`，复制原文件权限后改名替换。改名失败（Windows 上文件被占用）时直接覆盖原文件。
+- 写入前识别原文件的缩进（tab 或空格个数）、换行符（LF 或 CRLF）、末尾换行和 BOM，写回时照用；`serde_json` 开启 `preserve_order`，键的顺序不变。输出是 `serde_json` 的多行格式，数组每项一行。
+- 数字经过 `f64` 或整数往返，`1.50` 写回为 `1.5`，超过 64 位整数范围的数会丢精度。没有开 `serde_json` 的 `arbitrary_precision`：这个特性对整个依赖图生效，会影响 Tauri 内部对数字的反序列化。
+- 路径是符号链接时先解析出真实路径，写到链接指向的文件。
+- 先写同目录的 `<文件>.vanity-tmp`：在 macOS 和 Linux 上以 600 权限创建，写完再改成原文件的权限（新文件用 644，`vanity.json` 用 600），然后改名替换。改名失败（Windows 上文件被占用）时直接覆盖原文件。
 - 文件存在但不是合法 JSON 时，`patch_file` 返回错误，不写入，免得用空对象覆盖用户待修的文件。
-- 每次运行中，`settings.json` 和 `~/.claude.json` 第一次被修改前各备份一次到 `backups/`。`vanity.json` 不备份。
+- 每次运行中，`settings.json` 和 `~/.claude.json` 第一次被修改前各备份一次到 `backups/<settings|claude>-<Unix 时间戳>.json`，每个文件保留最近 `BACKUPS_KEPT`（5）份。复制成功后才记为已备份，失败时下次修改会重试。`vanity.json` 不备份。
+- `write_store` 在原 `vanity.json` 存在但读不出来时拒绝写入；界面在读取失败时也不调用它。
 - 设置了 `CLAUDE_CONFIG_DIR` 时，两个 Claude Code 文件都在那个目录里，`.claude.json` 也在其中，这与 Claude Code 的行为一致。
 - 设置了 `VANITY_CASE_DIR` 时，`vanity.json` 和 `backups/` 放在那个目录里，供测试和开发使用。
 
@@ -58,8 +64,8 @@
 			"id": "k3j9x2ab",
 			"name": "cpa",
 			"baseUrl": "https://example.com",
-			"keyType": "token",
-			"key": "sk-…",
+			"authToken": "sk-…",
+			"apiKey": "",
 			"headers": "X-Title: claude",
 			"model": "",
 			"subagentModel": "",
@@ -81,6 +87,17 @@
 - 修改 `PROFILE_ENV` 时同步修改 `env-profile.json`，测试会核对两者是否一致。
 - 当前配置靠比较内容识别：`settings.json` 里这些键的值与某套配置生成的值完全相同，这套就是当前配置。全部为空时是"官方登录"。都对不上时界面提示"存为新配置"。
 - 编辑时界面改的是一份草稿，保存后才写入 `vanity.json`。保存的配置在保存前是当前配置时，同时写进 `settings.json`，两边保持一致。
+- 一套配置可以同时有 `authToken` 和 `apiKey`，分别对应两个变量；`fetch_models` 两个都有时两个请求头都发。
+- `fetch_models` 不跟随重定向：ureq 跟随时只去掉 `Authorization`，`x-api-key` 和自定义请求头会发给新主机。
+
+## 界面重绘
+
+每次写入文件后整页重绘。为了不丢正在编辑的内容：
+
+- 输入框在 `change`（失焦或回车）时提交，重绘发生在提交之后。
+- JSON 编辑框的未保存文字存在 `S.jsonDrafts`，"添加变量"的两个输入存在 `S.envAdd`，重绘时恢复。
+- 窗口重新获得焦点时重新读取文件，内容有变化才重绘。
+- 设置页的搜索框在输入法组字期间（`isComposing`）不重绘，组字结束后再更新。
 
 ## 模板
 
@@ -98,7 +115,8 @@
 
 - `applyTemplate()` 为每一项记下应用前的值，存进 `snapshot`。已经记过的项保留最早的那份，所以连续应用两次后恢复，得到的仍是第一次应用前的值。
 - `snapshot` 先保存到 `vanity.json`，再写配置文件，写入中途出错时也不会丢失恢复所需的记录。
-- `restoreTemplate()` 只恢复当前值仍等于模板值的项，其余项跳过，避免覆盖应用后用户自己改的值。恢复后清空 `snapshot`。
+- `restoreTemplate()` 只恢复当前值仍等于模板值的项，其余项跳过，避免覆盖应用后用户自己改的值。恢复后 `snapshot` 只留下跳过的项的记录，全部恢复时清空。
+- 应用和恢复前先重新读取文件；保存模板后也重新读取，因为模板可能用到 `~/.claude.json` 里之前没读的键（`read_file` 只返回界面要的键）。
 - 编辑模板时，`snapshot` 里已删除的项一并去掉。
 - 内置模板由 `builtinTemplates()` 定义，只在第一次生成 `vanity.json` 时写入，之后与自建模板一样可以修改和删除。
 
@@ -124,7 +142,7 @@
 |---|---|
 | `key` | 设置键，嵌套键用点连接，与官方索引一致 |
 | `file` | `settings` 或 `global`（官方 Scope 为 `Global config` 的键写在 `~/.claude.json`） |
-| `type` | 决定控件：`boolean`（未设置/开/关）、`string`（可带 `suggestions`）、`enum`（带 `options`，`value` 是写入文件的原值）、`integer`/`number`（可带 `min`、`max`）、`stringArray`（每行一项）、`stringMap`（键值对）、`object`（只作分组标题，子键另有条目）、`json`（JSON 编辑框，可带 `example`） |
+| `type` | 决定控件：`boolean`（未设置/开/关）、`string`（可带 `suggestions`）、`enum`（带 `options`，`value` 是写入文件的原值）、`integer`/`number`（可带 `min`、`exclusiveMin`、`max`）、`stringArray`（每行一项）、`stringMap`（键值对）、`object`（只作分组标题，子键另有条目）、`json`（JSON 编辑框，可带 `example`） |
 | `label`、`desc`、`default` | 中文名、说明、默认值描述 |
 | `doc` | 官方设置参考里的锚点，取自索引表的链接 |
 | `removed` | 官方已移除的键。文件里没有设置时不显示 |
@@ -133,14 +151,14 @@
 
 `hasCompletedOnboarding` 不在官方文档里，但 Claude Code 会读取它来决定是否显示首次启动引导，所以手工维护这一条。
 
-环境变量的 `env-common.json` 和 `env-profile.json` 每项有 `name`、`group`、`type`、`label`、`desc`。`type` 为 `flag` 时是开关：打开写入 `on` 的值（默认 `"1"`），关闭删除变量。`CLAUDE_CODE_ATTRIBUTION_HEADER` 这类写 `"0"` 才生效的变量，用 `on` 指明。env 的值一律按字符串写入。
+环境变量的 `env-common.json` 和 `env-profile.json` 每项有 `name`、`group`、`type`、`label`、`desc`。`type` 为 `flag` 时是开关：打开写入 `on` 的值（默认 `"1"`），关闭删除变量。`CLAUDE_CODE_ATTRIBUTION_HEADER` 这类写 `"0"` 才生效的变量，用 `on` 指明；文档写明任何非空值都算开启的变量加 `any: true`，有值就显示为开。`type` 为 `number` 的变量只接受非负整数。env 的值一律按字符串写入。
 
 ### 跟进官方文档
 
 发版前运行 `npm run update-docs`：
 
 1. 下载最新的 `settings-reference.md` 和 `env-vars.md` 到 `docs-src/`，重新生成 `env-all.json` 和 `keys.tsv`。
-2. 列出文档有而 `fields.json` 没有的非托管键、`fields.json` 有而文档已删除的键、改为只在托管配置里生效的键，以及常用变量里已不在文档中的变量。
+2. 列出文档有而 `fields.json` 没有的非托管键、`fields.json` 有而文档已删除的键、改为只在托管配置里生效的键、官方标为 "Removed in" 但没加 `removed` 的键，以及常用变量里已不在文档中的变量。
 3. 按列出的结果手工修改 `fields.json`：新键对照 `docs-src/settings-reference.md` 里该键的 Scope、Type 和正文补齐各字段；删除的键加 `removed: true` 或直接删除。
 
 ## 开发和测试

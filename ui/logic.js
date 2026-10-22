@@ -26,8 +26,8 @@ export function newProfile(fields = {}) {
 		id: fields.id ?? randomId(),
 		name: "",
 		baseUrl: "",
-		keyType: "token",
-		key: "",
+		authToken: "",
+		apiKey: "",
 		headers: "",
 		model: "",
 		subagentModel: "",
@@ -49,7 +49,8 @@ export function profileEnv(p) {
 		if (typeof v === "string" && v.trim() !== "") env[k] = v.trim();
 	};
 	put("ANTHROPIC_BASE_URL", p.baseUrl);
-	put(p.keyType === "apiKey" ? "ANTHROPIC_API_KEY" : "ANTHROPIC_AUTH_TOKEN", p.key);
+	put("ANTHROPIC_AUTH_TOKEN", p.authToken);
+	put("ANTHROPIC_API_KEY", p.apiKey);
 	put("ANTHROPIC_CUSTOM_HEADERS", p.headers);
 	put("ANTHROPIC_MODEL", p.model);
 	put("CLAUDE_CODE_SUBAGENT_MODEL", p.subagentModel);
@@ -82,12 +83,11 @@ export function profileFromSettings(settings, fields = {}) {
 	const env = isObject(settings?.env) ? settings.env : {};
 	const s = (k) => (typeof env[k] === "string" ? env[k] : env[k] == null ? "" : String(env[k]));
 	const model = (prefix) => Object.fromEntries(Object.entries(MODEL_PARTS).map(([part, suffix]) => [part, s(prefix + suffix)]));
-	const apiKey = !s("ANTHROPIC_AUTH_TOKEN") && !!s("ANTHROPIC_API_KEY");
 	return newProfile({
 		name: hostName(s("ANTHROPIC_BASE_URL")) || "当前配置",
 		baseUrl: s("ANTHROPIC_BASE_URL"),
-		keyType: apiKey ? "apiKey" : "token",
-		key: apiKey ? s("ANTHROPIC_API_KEY") : s("ANTHROPIC_AUTH_TOKEN"),
+		authToken: s("ANTHROPIC_AUTH_TOKEN"),
+		apiKey: s("ANTHROPIC_API_KEY"),
 		headers: s("ANTHROPIC_CUSTOM_HEADERS"),
 		model: s("ANTHROPIC_MODEL"),
 		subagentModel: s("CLAUDE_CODE_SUBAGENT_MODEL"),
@@ -181,19 +181,25 @@ export function applyTemplate(t, files) {
 	return { ops, snapshot };
 }
 
-/** 恢复模板：只恢复仍是模板值的项，应用后被改过的项跳过并返回。 */
+/**
+ * 恢复模板：只恢复仍是模板值的项，应用后被改过的项跳过。
+ * 返回的 snapshot 只保留跳过的项的记录，以后重新应用再恢复时还能找回原值。
+ */
 export function restoreTemplate(t, files) {
 	const ops = { settings: [], global: [] };
 	const skipped = [];
+	const snapshot = [];
 	for (const item of t.items) {
 		const snap = (t.snapshot ?? []).find((s) => sameItem(s, item));
-		if (!snap || !deepEqual(getPath(files[item.file], item.path), item.value)) {
+		if (!snap) continue;
+		if (!deepEqual(getPath(files[item.file], item.path), item.value)) {
 			skipped.push(item);
+			snapshot.push(snap);
 			continue;
 		}
 		ops[item.file].push(snap.exists ? { path: item.path, value: snap.value } : { path: item.path });
 	}
-	return { ops, skipped };
+	return { ops, skipped, snapshot };
 }
 
 export function builtinTemplates() {

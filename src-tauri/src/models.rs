@@ -8,9 +8,12 @@ use std::time::Duration;
 #[serde(rename_all = "camelCase")]
 pub struct Request {
 	pub base_url: String,
-	pub key: String,
-	/// `token` 用 `Authorization: Bearer`，`apiKey` 用 `x-api-key`，和 Claude Code 一致。
-	pub key_type: String,
+	/// `ANTHROPIC_AUTH_TOKEN`，以 `Authorization: Bearer` 发送，和 Claude Code 一致。
+	#[serde(default)]
+	pub auth_token: String,
+	/// `ANTHROPIC_API_KEY`，以 `x-api-key` 发送。
+	#[serde(default)]
+	pub api_key: String,
 	/// `ANTHROPIC_CUSTOM_HEADERS` 的原文，每行一个 `Name: Value`。
 	#[serde(default)]
 	pub headers: String,
@@ -60,26 +63,32 @@ pub fn fetch(req: &Request) -> Result<Vec<String>, String> {
 	if req.base_url.trim().is_empty() {
 		return Err("没有填写服务地址".into());
 	}
+	// 不跟随重定向：ureq 跟随时只去掉 Authorization，x-api-key 和自定义请求头会发给新主机。
 	let mut config = ureq::Agent::config_builder()
 		.timeout_global(Some(Duration::from_secs(15)))
-		.http_status_as_error(false);
+		.http_status_as_error(false)
+		.max_redirects(0);
 	if !req.proxy.trim().is_empty() {
 		let proxy = ureq::Proxy::new(req.proxy.trim()).map_err(|e| format!("代理地址无效：{e}"))?;
 		config = config.proxy(Some(proxy));
 	}
 	let agent: ureq::Agent = config.build().into();
 	let mut call = agent.get(&models_url(&req.base_url)).header("anthropic-version", "2023-06-01");
-	if !req.key.is_empty() {
-		call = match req.key_type.as_str() {
-			"apiKey" => call.header("x-api-key", &req.key),
-			_ => call.header("Authorization", &format!("Bearer {}", req.key)),
-		};
+	if !req.auth_token.is_empty() {
+		call = call.header("Authorization", &format!("Bearer {}", req.auth_token));
+	}
+	if !req.api_key.is_empty() {
+		call = call.header("x-api-key", &req.api_key);
 	}
 	for (name, value) in parse_headers(&req.headers) {
 		call = call.header(&name, &value);
 	}
 	let mut resp = call.call().map_err(|e| format!("请求失败：{e}"))?;
 	let status = resp.status();
+	if status.is_redirection() {
+		let to = resp.headers().get("location").and_then(|v| v.to_str().ok()).unwrap_or("?");
+		return Err(format!("服务返回 {status}，重定向到 {to}；请把服务地址改成新地址"));
+	}
 	let text = resp.body_mut().read_to_string().map_err(|e| format!("读取响应失败：{e}"))?;
 	if !status.is_success() {
 		let snippet: String = text.chars().take(500).collect();

@@ -51,23 +51,40 @@ struct State {
 	backed_up: Mutex<HashSet<Target>>,
 }
 
+/// 每个文件保留的备份份数。
+const BACKUPS_KEPT: usize = 5;
+
 impl State {
+	/// 本次运行中第一次修改某个文件前，把它复制到 `backups/<名字>-<时间戳>.json`，只保留最近几份。
 	fn backup_once(&self, target: Target) -> Result<(), String> {
-		if target == Target::Store || !self.backed_up.lock().unwrap().insert(target) {
+		if target == Target::Store || self.backed_up.lock().unwrap().contains(&target) {
 			return Ok(());
 		}
 		let src = path_of(target);
-		if !src.exists() {
-			return Ok(());
+		if src.exists() {
+			let stem = if target == Target::Settings { "settings" } else { "claude" };
+			let dir = store_dir().join("backups");
+			std::fs::create_dir_all(&dir).map_err(|e| format!("创建备份目录失败：{e}"))?;
+			let secs = std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).map(|d| d.as_secs()).unwrap_or(0);
+			std::fs::copy(&src, dir.join(format!("{stem}-{secs}.json"))).map_err(|e| format!("备份失败：{e}"))?;
+			prune_backups(&dir, stem);
 		}
-		let name = match target {
-			Target::Settings => "settings.json",
-			_ => "claude.json",
-		};
-		let dir = store_dir().join("backups");
-		std::fs::create_dir_all(&dir).map_err(|e| format!("创建备份目录失败：{e}"))?;
-		std::fs::copy(&src, dir.join(name)).map_err(|e| format!("备份失败：{e}"))?;
+		self.backed_up.lock().unwrap().insert(target);
 		Ok(())
+	}
+}
+
+fn prune_backups(dir: &std::path::Path, stem: &str) {
+	let Ok(entries) = std::fs::read_dir(dir) else { return };
+	let prefix = format!("{stem}-");
+	let mut names: Vec<String> = entries
+		.filter_map(|e| e.ok()?.file_name().into_string().ok())
+		.filter(|n| n.starts_with(&prefix) && n.ends_with(".json"))
+		.collect();
+	// 时间戳位数相同，按名字排序就是按时间排序。
+	names.sort();
+	for name in names.iter().rev().skip(BACKUPS_KEPT) {
+		let _ = std::fs::remove_file(dir.join(name));
 	}
 }
 
@@ -123,11 +140,13 @@ fn patch_file(state: tauri::State<State>, target: Target, ops: Vec<Op>) -> Resul
 	jsonfile::patch(&path_of(target), &ops).map(|_| ())
 }
 
-/// `vanity.json` 里有明文密钥，在 macOS 和 Linux 上只让当前用户读写。
+/// 整个写入 `vanity.json`。原文件存在但读不出来时拒绝写入，免得覆盖掉里面的配置和密钥。
+/// 文件里有明文密钥，在 macOS 和 Linux 上只让当前用户读写。
 #[tauri::command]
 fn write_store(value: Value) -> Result<(), String> {
 	let path = path_of(Target::Store);
-	jsonfile::write_atomic(&path, &jsonfile::serialize(&value, &jsonfile::Format::default()))?;
+	jsonfile::read(&path).map_err(|e| format!("vanity.json 读取失败（{e}），修好或删掉它之前不能保存"))?;
+	jsonfile::write_atomic(&path, &jsonfile::serialize(&value, &jsonfile::Format::default()), 0o600)?;
 	#[cfg(unix)]
 	{
 		use std::os::unix::fs::PermissionsExt;
@@ -213,7 +232,8 @@ mod tests {
 		let text = std::fs::read_to_string(dir.path().join("settings.json")).unwrap();
 		assert_eq!(text, "{\n\t\"keep\": true,\n\t\"model\": \"opus\",\n\t\"nothing\": null\n}\n");
 
-		assert!(dir.path().join("vanity/backups/settings.json").exists());
+		let backups: Vec<_> = std::fs::read_dir(dir.path().join("vanity/backups")).unwrap().collect();
+		assert_eq!(backups.len(), 1);
 
 		let global = call(&webview, "read_file", json!({ "target": "global", "keys": ["hasCompletedOnboarding"] })).unwrap();
 		assert_eq!(global["value"], json!({ "hasCompletedOnboarding": false }));
@@ -223,5 +243,10 @@ mod tests {
 		assert!(read["error"].is_string());
 		assert!(call(&webview, "patch_file", json!({ "target": "settings", "ops": [{ "path": ["a"], "value": 1 }] })).is_err());
 		assert!(call(&webview, "open_doc", json!({ "anchor": "x/../evil" })).is_err());
+
+		call(&webview, "write_store", json!({ "value": { "version": 1 } })).unwrap();
+		std::fs::write(dir.path().join("vanity/vanity.json"), "{ broken").unwrap();
+		assert!(call(&webview, "write_store", json!({ "value": { "version": 1 } })).is_err());
+		assert_eq!(std::fs::read_to_string(dir.path().join("vanity/vanity.json")).unwrap(), "{ broken");
 	}
 }

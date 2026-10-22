@@ -1241,7 +1241,8 @@
 			"label": "技能列表占比",
 			"desc": "每轮给 Claude 的 skill 列表最多占上下文窗口的比例，须大于 0 且不超过 1。超出时保留名称、去掉最少用 skill 的描述。",
 			"default": "0.01",
-			"doc": "skilllistingbudgetfraction"
+			"doc": "skilllistingbudgetfraction",
+			"exclusiveMin": 0
 		},
 		{
 			"key": "skillListingMaxDescChars",
@@ -1262,7 +1263,8 @@
 			"min": 1,
 			"label": "任务输出上限（旧）",
 			"desc": "已在 v2.1.277 随 TaskOutput 工具一起移除，当前版本设置无效。旧版本中用于限制读取后台任务输出时内联给 Claude 的字符数。",
-			"doc": "taskoutputmaxchars"
+			"doc": "taskoutputmaxchars",
+			"removed": true
 		},
 		{
 			"key": "attribution",
@@ -2158,7 +2160,9 @@
 			"label": "HTTP 代理端口",
 			"desc": "让沙盒使用你自己的 HTTP 代理（本地 TCP 端口），由该代理接管过滤，Claude Code 不再对这部分流量应用域名列表和网络询问。",
 			"default": "未设置，使用 Claude Code 自带代理",
-			"doc": "sandbox-network-httpproxyport"
+			"doc": "sandbox-network-httpproxyport",
+			"min": 1,
+			"max": 65535
 		},
 		{
 			"key": "sandbox.network.socksProxyPort",
@@ -2168,7 +2172,9 @@
 			"label": "SOCKS 代理端口",
 			"desc": "让沙盒使用你自己的 SOCKS5 代理（本地 TCP 端口），由该代理接管过滤。只设 HTTP 或 SOCKS 其中一个时，另一种协议仍走 Claude Code 自带代理。",
 			"default": "未设置，使用 Claude Code 自带代理",
-			"doc": "sandbox-network-socksproxyport"
+			"doc": "sandbox-network-socksproxyport",
+			"min": 1,
+			"max": 65535
 		},
 		{
 			"key": "sandbox.network.strictAllowlist",

@@ -49,7 +49,7 @@ test("切换配置：写入新值，删除旧配置留下的键，其他 env 不
 		env: { ANTHROPIC_BASE_URL: "https://old", ANTHROPIC_API_KEY: "k", ANTHROPIC_DEFAULT_OPUS_MODEL: "x", HTTP_PROXY: "p" },
 		modelOverrides: { a: "b" },
 	};
-	const p = newProfile({ name: "new", baseUrl: "https://new", key: "t", tiers: { ...newProfile().tiers, sonnet: { id: "s", name: "", description: "", capabilities: "" } } });
+	const p = newProfile({ name: "new", baseUrl: "https://new", authToken: "t", tiers: { ...newProfile().tiers, sonnet: { id: "s", name: "", description: "", capabilities: "" } } });
 	const out = patch(settings, profileOps(p));
 	assert.deepEqual(out, { env: { HTTP_PROXY: "p", ANTHROPIC_BASE_URL: "https://new", ANTHROPIC_AUTH_TOKEN: "t", ANTHROPIC_DEFAULT_SONNET_MODEL: "s" } });
 	assert.equal(activeProfileId(out, [p]), p.id);
@@ -68,11 +68,19 @@ test("从 settings.json 导入后能识别为当前配置", () => {
 	};
 	const p = profileFromSettings(settings);
 	assert.equal(p.name, "cpa.example.com");
-	assert.equal(p.keyType, "apiKey");
+	assert.equal(p.apiKey, "k");
+	assert.equal(p.authToken, "");
 	assert.equal(p.custom.id, "m");
 	assert.equal(p.tiers.haiku.name, "H");
 	assert.equal(activeProfileId(settings, [p]), p.id);
 	assert.equal(activeProfileId({ env: { ANTHROPIC_BASE_URL: "other" } }, [p]), null);
+});
+
+test("同时设置了两种密钥时都保留", () => {
+	const settings = { env: { ANTHROPIC_AUTH_TOKEN: "t", ANTHROPIC_API_KEY: "k" } };
+	const p = profileFromSettings(settings);
+	assert.equal(activeProfileId(settings, [p]), p.id);
+	assert.deepEqual(patch({}, profileOps(p)), settings);
 });
 
 test("第一次打开：有自定义 API 时导入，没有时只有内置模板", () => {
@@ -101,8 +109,9 @@ test("恢复时跳过应用后被改过的项", () => {
 	const applied = applyTemplate(t, files);
 	files.settings = patch(patch(files.settings, applied.ops.settings), [{ path: ["env", "CLAUDE_CODE_ATTRIBUTION_HEADER"], value: "1" }]);
 	assert.equal(templateStatus(t, files), "partial");
-	const { ops, skipped } = restoreTemplate({ ...t, snapshot: applied.snapshot }, files);
+	const { ops, skipped, snapshot } = restoreTemplate({ ...t, snapshot: applied.snapshot }, files);
 	assert.equal(skipped.length, 1);
+	assert.deepEqual(snapshot.map((s) => s.path.at(-1)), ["CLAUDE_CODE_ATTRIBUTION_HEADER"]);
 	assert.deepEqual(patch(files.settings, ops.settings), { env: { CLAUDE_CODE_ATTRIBUTION_HEADER: "1" } });
 });
 

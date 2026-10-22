@@ -17,6 +17,9 @@ const S = {
 	search: "",
 	onlySet: false,
 	open: new Set(),
+	// 还没提交的输入：JSON 编辑框（按字段）和"添加变量"。重绘时用它们恢复，免得切回窗口或写入别的字段时丢掉。
+	jsonDrafts: {},
+	envAdd: { name: "", value: "" },
 };
 
 const PAGES = [
@@ -112,6 +115,10 @@ async function patch(file, ops, msg) {
 }
 
 async function saveStore() {
+	if (S.storeError) {
+		toast("vanity.json 读取失败，修好或删掉它之前不能保存", true);
+		return false;
+	}
 	try {
 		await invoke("write_store", { value: S.store });
 		return true;
@@ -142,9 +149,10 @@ function control(f, val, commit) {
 		}
 		case "flag": {
 			const onVal = f.on ?? "1";
-			const on = val === onVal;
+			// any：文档写明任何非空值都算开启的变量（如 DISABLE_TELEMETRY="0" 也是开）。
+			const on = f.any ? set && val !== "" : val === onVal;
 			return h("div", { class: "ctl" },
-				set && !on ? h("span", { class: "raw", title: "当前值" }, JSON.stringify(val)) : null,
+				set && val !== onVal ? h("span", { class: "raw", title: "当前值" }, JSON.stringify(val)) : null,
 				h("button", { class: on ? "switch on" : "switch", title: on ? `写入 "${onVal}"` : "未设置", onclick: () => commit(on ? undefined : onVal) }));
 		}
 		case "enum": {
@@ -160,23 +168,25 @@ function control(f, val, commit) {
 		case "integer":
 		case "number": {
 			const numeric = f.type !== "string";
+			const orig = set ? (typeof val === "string" ? val : JSON.stringify(val)) : "";
 			const input = h("input", {
 				class: "input mono",
-				value: set ? (typeof val === "string" ? val : JSON.stringify(val)) : "",
+				value: orig,
 				placeholder: f.placeholder ?? (numeric ? "数字" : ""),
 				list: listId,
 				spellcheck: "false",
 				onchange: (e) => {
 					const raw = e.target.value.trim();
 					if (raw === "") return commit(undefined);
-					if (!numeric || f.envValue) {
-						if (numeric && !Number.isFinite(Number(raw))) return bad(e.target, "请输入数字");
-						return commit(raw);
-					}
+					if (!numeric) return commit(raw);
+					// env 的数字项都是非负整数，按字符串写入。
+					if (f.envValue) return /^\d+$/.test(raw) ? commit(raw) : bad(e.target, "请输入非负整数", orig);
 					const n = Number(raw);
-					if (!Number.isFinite(n) || (f.type === "integer" && !Number.isInteger(n))) return bad(e.target, f.type === "integer" ? "请输入整数" : "请输入数字");
-					if (f.min != null && n < f.min) return bad(e.target, `不能小于 ${f.min}`);
-					if (f.max != null && n > f.max) return bad(e.target, `不能大于 ${f.max}`);
+					if (!/^-?(\d+\.?\d*|\.\d+)([eE][-+]?\d+)?$/.test(raw) || !Number.isFinite(n)) return bad(e.target, "请输入数字", orig);
+					if (f.type === "integer" && !Number.isInteger(n)) return bad(e.target, "请输入整数", orig);
+					if (f.min != null && n < f.min) return bad(e.target, `不能小于 ${f.min}`, orig);
+					if (f.exclusiveMin != null && n <= f.exclusiveMin) return bad(e.target, `必须大于 ${f.exclusiveMin}`, orig);
+					if (f.max != null && n > f.max) return bad(e.target, `不能大于 ${f.max}`, orig);
 					commit(n);
 				},
 			});
@@ -201,29 +211,38 @@ function control(f, val, commit) {
 	}
 }
 
-function bad(input, msg) {
-	input.classList.add("bad");
+/** 输入无效：提示原因，并把输入框恢复成文件里的值，免得看起来像已保存。 */
+function bad(input, msg, orig) {
 	toast(msg, true);
+	if (orig !== undefined) input.value = orig;
+	else input.classList.add("bad");
 }
 
 function jsonEditor(f, val, commit) {
 	const set = val !== undefined;
-	const ta = h("textarea", { class: "input", rows: set ? Math.min(pretty(val).split("\n").length + 1, 16) : 3, spellcheck: "false", value: set ? pretty(val) : "", placeholder: f.example !== undefined ? `示例：${JSON.stringify(f.example)}` : "JSON" });
+	const id = `${f.file ?? "settings"}:${f.key}`;
+	const text = S.jsonDrafts[id] ?? (set ? pretty(val) : "");
+	const ta = h("textarea", { class: "input", rows: Math.min(Math.max(text.split("\n").length + 1, 3), 16), spellcheck: "false", value: text, placeholder: f.example !== undefined ? `示例：${JSON.stringify(f.example)}` : "JSON",
+		oninput: () => (S.jsonDrafts[id] = ta.value) });
 	const save = () => {
 		const raw = ta.value.trim();
-		if (raw === "") return commit(undefined);
-		try {
-			commit(JSON.parse(raw));
-		} catch (e) {
-			bad(ta, `JSON 有误：${e.message}`);
+		let v;
+		if (raw !== "") {
+			try {
+				v = JSON.parse(raw);
+			} catch (e) {
+				return bad(ta, `JSON 有误：${e.message}`);
+			}
 		}
+		delete S.jsonDrafts[id];
+		commit(v);
 	};
 	ta.addEventListener("keydown", (e) => {
 		if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) save();
 	});
 	return h("div", { class: "ctl col" }, ta, h("div", { class: "row" },
 		f.example !== undefined && !set ? h("button", { class: "btn small ghost", onclick: () => (ta.value = pretty(f.example)) }, "填入示例") : null,
-		set ? clearBtn(() => commit(undefined)) : null,
+		set ? clearBtn(() => { delete S.jsonDrafts[id]; commit(undefined); }) : null,
 		h("button", { class: "btn small", onclick: save }, "保存")));
 }
 
@@ -359,12 +378,6 @@ function profileEditor(active) {
 		h("input", { class: "input mono", value: obj[key] ?? "", spellcheck: "false", ...attrs, oninput: (e) => { obj[key] = e.target.value; touch(); } });
 	const modelInput = (obj, key, ph) => bind(obj, key, { list: "dl-models", placeholder: ph });
 
-	const keySeg = h("div", { class: "seg" }, [["token", "Auth Token"], ["apiKey", "API Key"]].map(([v, label]) =>
-		h("button", { class: d.keyType === v ? "on" : "", onclick: (e) => {
-			d.keyType = v;
-			for (const b of e.target.parentElement.children) b.classList.toggle("on", b === e.target);
-			touch();
-		} }, label)));
 
 	const tierRow = (label, m, ph) => {
 		const hasMore = !!(m.name || m.description || m.capabilities);
@@ -391,8 +404,9 @@ function profileEditor(active) {
 			h("div", { class: "form" },
 				h("label", {}, "名称"), h("input", { class: "input", value: d.name, oninput: (e) => { d.name = e.target.value; touch(); } }),
 				h("label", {}, "服务地址"), bind(d, "baseUrl", { placeholder: "https://api.example.com" }),
-				h("label", {}, "密钥"), h("div", { style: "display:flex;gap:8px" }, keySeg, bind(d, "key", { placeholder: "sk-…" })),
-				h("div", { class: "hint" }, "Auth Token 写入 ANTHROPIC_AUTH_TOKEN，以 Authorization: Bearer 发送；API Key 写入 ANTHROPIC_API_KEY，以 x-api-key 发送。"),
+				h("label", {}, "Auth Token"), bind(d, "authToken", { placeholder: "ANTHROPIC_AUTH_TOKEN" }),
+				h("label", {}, "API Key"), bind(d, "apiKey", { placeholder: "ANTHROPIC_API_KEY" }),
+				h("div", { class: "hint" }, "一般只填一个。Auth Token 以 Authorization: Bearer 发送，中转站多用这个；API Key 以 x-api-key 发送。"),
 				h("label", { class: "top" }, "请求头"),
 				h("textarea", { class: "input", rows: 2, placeholder: "每行一个，如 X-Title: claude", spellcheck: "false", value: d.headers, oninput: (e) => { d.headers = e.target.value; touch(); } }))),
 		h("div", { class: "card" },
@@ -418,12 +432,21 @@ function profileEditor(active) {
 			isActive ? null : h("button", { class: "btn primary", disabled: !!S.errors.settings, onclick: () => saveProfile(true) }, "保存并切换"))));
 }
 
+/** 按 NO_PROXY 判断这个地址是否直连：逗号分隔的主机名或域名后缀，`*` 表示全部直连。 */
+function bypassProxy(url, noProxy) {
+	const host = L.hostName(url);
+	if (!host || !noProxy) return false;
+	return String(noProxy).split(",").map((s) => s.trim().toLowerCase().replace(/^\*?\./, "")).filter(Boolean)
+		.some((e) => e === "*" || host === e || host.endsWith(`.${e}`));
+}
+
 async function fetchModels(d) {
 	const env = L.isObject(S.files.settings.env) ? S.files.settings.env : {};
 	S.models[d.id] = { loading: true };
 	render();
 	try {
-		const ids = await invoke("fetch_models", { req: { baseUrl: d.baseUrl, key: d.key, keyType: d.keyType, headers: d.headers, proxy: env.HTTPS_PROXY || env.HTTP_PROXY || "" } });
+		const proxy = bypassProxy(d.baseUrl, env.NO_PROXY ?? env.no_proxy) ? "" : env.HTTPS_PROXY || env.HTTP_PROXY || "";
+		const ids = await invoke("fetch_models", { req: { baseUrl: d.baseUrl, authToken: d.authToken, apiKey: d.apiKey, headers: d.headers, proxy } });
 		S.models[d.id] = { ids };
 	} catch (e) {
 		S.models[d.id] = { error: String(e) };
@@ -490,6 +513,7 @@ function templateCard(t) {
 }
 
 async function applyTemplate(t) {
+	await loadFiles();
 	const { ops, snapshot } = L.applyTemplate(t, S.files);
 	t.snapshot = snapshot;
 	if (!(await saveStore())) return;
@@ -498,10 +522,11 @@ async function applyTemplate(t) {
 }
 
 async function restoreTemplate(t) {
-	const { ops, skipped } = L.restoreTemplate(t, S.files);
+	await loadFiles();
+	const { ops, skipped, snapshot } = L.restoreTemplate(t, S.files);
 	const ok = (await patch("settings", ops.settings)) & (await patch("global", ops.global));
 	if (!ok) return;
-	t.snapshot = null;
+	t.snapshot = snapshot.length ? snapshot : null;
 	await saveStore();
 	render();
 	if (skipped.length) toast(`已恢复「${t.name}」，跳过应用后改动过的：${skipped.map((i) => i.path.join(".")).join("、")}`);
@@ -539,8 +564,10 @@ async function editTemplate(t) {
 		fileSel.onchange = () => path.setAttribute("list", `dl-tpl-${fileSel.value}`);
 		path.onchange = () => { if (!value.value.trim()) value.value = defaultFor(fileSel.value, path.value.trim()); };
 		return h("div", { class: "item-row" }, fileSel, path, value,
-			h("button", { class: "btn small ghost", title: "填入文件里的当前值", onclick: () => {
-				const cur = valueAt(fileSel.value, path.value.trim().split("."));
+			h("button", { class: "btn small ghost", title: "填入文件里的当前值", onclick: async () => {
+				const p = path.value.trim().split(".");
+				const read = await invoke("read_file", { target: fileSel.value, keys: [p[0]] });
+				const cur = L.getPath(read.value, p);
 				if (cur === undefined) toast("文件里没有这个键", true);
 				else value.value = JSON.stringify(cur);
 			} }, "当前值"),
@@ -557,11 +584,14 @@ async function editTemplate(t) {
 			if (!p.length && !value.value.trim()) continue;
 			if (!p.length) return toast("有一项没填键", true), false;
 			if (L.isProfilePath(fileSel.value, p)) return toast(`${p.join(".")} 由 API 配置管理，不能放进模板`, true), false;
+			let v;
 			try {
-				parsed.push({ file: fileSel.value, path: p, value: JSON.parse(value.value) });
+				v = JSON.parse(value.value);
 			} catch {
 				return toast(`${p.join(".")} 的值不是合法 JSON；字符串要加引号`, true), false;
 			}
+			if (fileSel.value === "settings" && p[0] === "env" && typeof v !== "string") return toast(`${p.join(".")} 是环境变量，值要写成字符串，如 "1"`, true), false;
+			parsed.push({ file: fileSel.value, path: p, value: v });
 		}
 		if (!parsed.length) return toast("至少要有一项", true), false;
 		return true;
@@ -580,6 +610,8 @@ async function editTemplate(t) {
 	if (t) S.store.templates[S.store.templates.indexOf(t)] = next;
 	else S.store.templates.push(next);
 	if (await saveStore()) toast("已保存");
+	// 模板可能用到 ~/.claude.json 里之前没读的键。
+	await loadFiles();
 	render();
 }
 
@@ -626,10 +658,13 @@ function pageSettings() {
 	const known = new Set(["$schema", ...S.data.fields.filter((f) => f.file === "settings").map((f) => f.key.split(".")[0])]);
 	const unknown = Object.keys(S.files.settings).filter((k) => !known.has(k));
 
-	const search = h("input", { class: "input", placeholder: "搜索键名或说明", value: S.search, oninput: (e) => {
+	// 输入法组字期间不重绘，否则会打断组字。
+	const onSearch = (e) => {
+		if (e.isComposing) return;
 		S.search = e.target.value;
 		renderKeepFocus(e.target);
-	} });
+	};
+	const search = h("input", { class: "input", placeholder: "搜索键名或说明", value: S.search, oninput: onSearch, oncompositionend: onSearch });
 	return [
 		head("设置", "修改立即写入文件。环境变量在「环境变量」页，API 地址、密钥和模型映射在「API」页。"),
 		fileErrors("settings", "global"),
@@ -680,18 +715,25 @@ function pageEnv() {
 	const commitEnv = (name, v) => commitPath("settings", ["env", name], v);
 	const asField = (e) => ({ ...e, key: e.name, envValue: true, type: e.type === "number" ? "integer" : e.type });
 
-	const nameIn = h("input", { class: "input mono", placeholder: "变量名", list: "dl-env-all", spellcheck: "false" });
-	const valIn = h("input", { class: "input mono", placeholder: "值", spellcheck: "false" });
+	const nameIn = h("input", { class: "input mono", placeholder: "变量名", list: "dl-env-all", spellcheck: "false", value: S.envAdd.name });
+	const valIn = h("input", { class: "input mono", placeholder: "值", spellcheck: "false", value: S.envAdd.value, oninput: () => (S.envAdd.value = valIn.value) });
 	const hint = h("p", { class: "desc", style: "margin:6px 0 0" });
-	nameIn.oninput = () => {
+	const showHint = () => {
 		const n = nameIn.value.trim();
 		hint.textContent = !n ? "" : L.PROFILE_ENV.includes(n) ? "这个变量由 API 配置管理，请到「API」页修改。" : docOf(n);
 	};
-	const add = () => {
+	nameIn.oninput = () => {
+		S.envAdd.name = nameIn.value;
+		showHint();
+	};
+	showHint();
+	const add = async () => {
 		const n = nameIn.value.trim();
 		if (!/^[A-Za-z_][A-Za-z0-9_]*$/.test(n)) return toast("变量名只能包含字母、数字和下划线", true);
 		if (L.PROFILE_ENV.includes(n)) return toast("这个变量由 API 配置管理，请到「API」页修改", true);
-		commitEnv(n, valIn.value);
+		const value = valIn.value;
+		S.envAdd = { name: "", value: "" };
+		if (!(await commitEnv(n, value))) S.envAdd = { name: n, value };
 	};
 
 	return [
@@ -762,8 +804,10 @@ async function init() {
 	window.__TAURI__.app.getVersion().then((v) => (document.getElementById("version").textContent = `v${v}`));
 	// 切回窗口时重新读文件，拿到在别处做的修改。
 	window.addEventListener("focus", async () => {
+		const before = JSON.stringify([S.files, S.errors]);
 		await loadFiles();
-		if (!document.getElementById("dialog").open) render();
+		// 文件没变就不重绘，保留正在编辑的输入。
+		if (JSON.stringify([S.files, S.errors]) !== before && !document.getElementById("dialog").open) render();
 	});
 }
 

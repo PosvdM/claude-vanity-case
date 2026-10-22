@@ -31,7 +31,7 @@
 - **切换到官方登录**：删除所有 API 相关的键，Claude Code 改用 `/login` 登录的账号。
 - `settings.json` 里的 API 设置和所有配置都对不上时（比如手动改过文件），页面顶部会提示，可以点"存为新配置"。
 
-密钥有两种写法：Auth Token 写入 `ANTHROPIC_AUTH_TOKEN`，以 `Authorization: Bearer` 发送；API Key 写入 `ANTHROPIC_API_KEY`，以 `x-api-key` 发送。中转站一般用 Auth Token。
+密钥有两种，一般只填一个：Auth Token 写入 `ANTHROPIC_AUTH_TOKEN`，以 `Authorization: Bearer` 发送，中转站多用这个；API Key 写入 `ANTHROPIC_API_KEY`，以 `x-api-key` 发送。
 
 **模型映射**里留空的项不写入：
 
@@ -43,18 +43,20 @@
 | 自定义选项 | `ANTHROPIC_CUSTOM_MODEL_OPTION`，在 `/model` 里多出一个选项 |
 | 按版本映射 | `modelOverrides`：在 `/model` 里选中左边的模型时，实际请求右边的模型 ID |
 
-"获取模型列表"请求 `<服务地址>/v1/models`，代理取 `settings.json` 的 `env` 里的 `HTTPS_PROXY` 或 `HTTP_PROXY`。这是妆奁唯一的网络请求，只在点这个按钮时发出。
+"获取模型列表"请求 `<服务地址>/v1/models`，代理取 `settings.json` 的 `env` 里的 `HTTPS_PROXY` 或 `HTTP_PROXY`，地址在 `NO_PROXY` 里时直连。服务返回重定向时不跟随，提示新地址。这是妆奁唯一的网络请求，只在点这个按钮时发出。
 
 ### 模板
 
 - **应用**：写入模板里的值。每一项第一次被应用时，记下它原来的值（包括"原来没有"）。
-- **恢复**：把记下的值写回去，原来没有的键会被删除。应用后又被改过的项不恢复，提示里会列出来。没有应用记录时"恢复"不可用，比如模板里的值本来就已经设好了。
+- **恢复**：把记下的值写回去，原来没有的键会被删除。应用后又被改过的项不恢复，提示里会列出来，它们的记录保留。没有应用记录时"恢复"不可用，比如模板里的值本来就已经设好了。
 - 状态标签：所有项都与文件一致时为"已应用"，一部分一致时为"部分生效"。
-- 模板可以同时包含 `settings.json` 和 `~/.claude.json` 的键，值按 JSON 填写（字符串要加引号）。API 配置管理的键不能放进模板。
+- 模板可以同时包含 `settings.json` 和 `~/.claude.json` 的键，值按 JSON 填写（字符串要加引号，环境变量的值必须是字符串）。API 配置管理的键不能放进模板。
 
 ### 设置和环境变量
 
-修改立即写入文件：输入框在失去焦点时保存，JSON 编辑框点"保存"或按 Ctrl/Cmd+Enter 保存。布尔值的"未设置"、"清除"按钮和清空输入框都会从文件里删除这个键，Claude Code 随即使用默认值。
+修改立即写入文件：输入框在失去焦点时保存，JSON 编辑框点"保存"或按 Ctrl/Cmd+Enter 保存。值不合法时提示原因，输入框恢复成文件里的值。布尔值的"未设置"、"清除"按钮和清空输入框都会从文件里删除这个键，Claude Code 随即使用默认值。
+
+环境变量页的开关：`DISABLE_TELEMETRY` 这类文档写明"任何非空值都算开启"的变量，只要设了值就显示为开；其余开关只有值等于开启值（通常是 `"1"`）时显示为开，其他值显示在开关旁边。
 
 - 只在企业托管配置里生效的键不显示，写进用户配置也没有作用。
 - 已被官方移除的键只在文件里还设着时显示。
@@ -72,11 +74,12 @@ Claude Code 会监视 `settings.json`，大多数设置在运行中的会话里�
 | `~/.claude/settings.json` | Claude Code 的用户配置。API、设置、环境变量和模板都写这里 |
 | `~/.claude.json` | Claude Code 的全局状态。只读写设置页"全局配置"分组里的键和模板里用到的键 |
 | `vanity.json` | 妆奁自己的数据：API 配置（含明文密钥）和模板。macOS 在 `~/Library/Application Support/claude-vanity-case/`，权限为 600；Windows 在 `%APPDATA%\claude-vanity-case\` |
-| `backups/` | 与 `vanity.json` 同目录。每次打开妆奁后第一次修改某个文件前，把它复制一份到这里，只保留最近一份 |
+| `backups/` | 与 `vanity.json` 同目录。每次打开妆奁后第一次修改某个文件前，把它复制一份到这里，每个文件保留最近 5 份 |
 
 - 设置了环境变量 `CLAUDE_CONFIG_DIR` 时，两个 Claude Code 文件都从那个目录读写。macOS 上从「应用程序」启动的妆奁拿不到 shell 里设置的变量，这种情况需要在终端里直接运行 `"/Applications/Vanity Case.app/Contents/MacOS/vanity-case"`。
-- 写入前重新读取文件，只改动涉及的键；缩进、换行符、键的顺序和文件权限保持不变，但数组会改成每项一行。
-- 文件不是合法的 JSON 时，页面顶部显示错误，修好之前不会写这个文件。
+- 写入前重新读取文件，只改动涉及的键。缩进、换行符、BOM、键的顺序和文件权限保持不变；符号链接保留，写入链接指向的文件。
+- 写回的文件按标准格式输出：数组每项一行，数字按 JSON 标准重写（如 `1.50` 写回为 `1.5`），`\u00e9` 这类转义写回为原字符。
+- 文件不是合法的 JSON 时，页面顶部显示错误，修好之前不会写这个文件。`vanity.json` 也一样，读不出来时不会保存，免得覆盖里面的配置。
 - 第一次打开时，如果 `settings.json` 里已经设置了 API，会自动存为第一套配置。
 - 侧栏底部的 `settings.json` 和 `.claude.json` 可以在文件夹中显示对应文件。
 

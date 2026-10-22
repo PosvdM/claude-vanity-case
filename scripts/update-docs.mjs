@@ -94,7 +94,7 @@ for (const file of ["ui/data/env-common.json", "ui/data/env-profile.json"]) {
 
 // 设置键：只报告差异，翻译和类型要人工补。
 const index = tables(readFileSync(at("docs-src/settings-reference.md"), "utf8"), "Key")
-	.map((cells) => ({ key: firstCode(cells[0]), topic: cells[2], scope: cells[3] }))
+	.map((cells) => ({ key: firstCode(cells[0]), removed: /^Removed in/.test(cells[1] ?? ""), topic: cells[2], scope: cells[3] }))
 	.filter((r) => r.key);
 const wanted = index.filter((r) => r.scope !== "Managed");
 const { fields } = JSON.parse(readFileSync(at("ui/data/fields.json"), "utf8"));
@@ -104,10 +104,13 @@ const added = wanted.filter((r) => !have.has(r.key));
 // hasCompletedOnboarding 是文档没写但 Claude Code 会读的键，手工维护。
 const removed = fields.filter((f) => !docKeys.has(f.key) && f.key !== "hasCompletedOnboarding");
 const nowManaged = fields.filter((f) => index.some((r) => r.key === f.key && r.scope === "Managed"));
+// 官方标为已移除、但 fields.json 里没标 removed 的键。
+const nowRemoved = fields.filter((f) => !f.removed && index.some((r) => r.key === f.key && r.removed));
 writeFileSync(at("docs-src/keys.tsv"), wanted.map((r) => `${r.key}\t${r.topic}\t${r.scope}`).join("\n") + "\n");
 
 console.log(`设置键：文档 ${index.length} 个，其中非托管 ${wanted.length} 个；fields.json ${fields.length} 个`);
 if (added.length) console.log(`需要补充：\n${added.map((r) => `  ${r.key}（${r.topic}，${r.scope}）`).join("\n")}`);
 if (removed.length) console.log(`文档里已没有：\n${removed.map((f) => `  ${f.key}`).join("\n")}`);
 if (nowManaged.length) console.log(`已改为只在托管配置里生效：\n${nowManaged.map((f) => `  ${f.key}`).join("\n")}`);
-if (!added.length && !removed.length && !nowManaged.length) console.log("fields.json 与文档一致");
+if (nowRemoved.length) console.log(`官方已移除，需要加 removed: true：\n${nowRemoved.map((f) => `  ${f.key}`).join("\n")}`);
+if (!added.length && !removed.length && !nowManaged.length && !nowRemoved.length) console.log("fields.json 与文档一致");

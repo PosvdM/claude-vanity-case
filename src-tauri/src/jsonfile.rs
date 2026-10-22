@@ -1,10 +1,10 @@
-//! 读写 JSON 配置文件：按路径修改，保留原文件的缩进、换行符、键顺序和权限。
+//! 读写 JSON 配置文件：按路径修改，保留原文件的缩进、换行符、BOM、键顺序和权限。
 
 use serde::Deserialize;
 use serde_json::{Map, Value};
 use std::fs;
-use std::io;
-use std::path::Path;
+use std::io::{self, Write};
+use std::path::{Path, PathBuf};
 
 /// 一次修改：`delete` 为真时删除这个键，否则写入 `value`（可以是 `null`）。
 #[derive(Debug, Clone, Deserialize)]
@@ -22,15 +22,17 @@ pub struct Format {
 	pub indent: String,
 	pub crlf: bool,
 	pub trailing_newline: bool,
+	pub bom: bool,
 }
 
 impl Default for Format {
 	fn default() -> Self {
-		Format { indent: "  ".into(), crlf: false, trailing_newline: true }
+		Format { indent: "  ".into(), crlf: false, trailing_newline: true, bom: false }
 	}
 }
 
 pub fn detect_format(text: &str) -> Format {
+	let bom = text.starts_with('\u{feff}');
 	let crlf = text.contains("\r\n");
 	let trailing_newline = text.ends_with('\n');
 	let indent = text
@@ -41,7 +43,7 @@ pub fn detect_format(text: &str) -> Format {
 			(!ws.is_empty()).then_some(ws)
 		})
 		.unwrap_or_else(|| "  ".into());
-	Format { indent, crlf, trailing_newline }
+	Format { indent, crlf, trailing_newline, bom }
 }
 
 pub fn serialize(value: &Value, format: &Format) -> String {
@@ -56,10 +58,13 @@ pub fn serialize(value: &Value, format: &Format) -> String {
 	if format.crlf {
 		text = text.replace('\n', "\r\n");
 	}
+	if format.bom {
+		text.insert(0, '\u{feff}');
+	}
 	text
 }
 
-/// 按路径设置或删除。删除后变空的上级对象一并删除。
+/// 按路径设置或删除。删除了键之后变空的上级对象一并删除；上级为 `null` 时替换为对象。
 pub fn apply(root: &mut Value, op: &Op) -> Result<(), String> {
 	if op.path.is_empty() {
 		return Err("路径不能为空".into());
@@ -91,17 +96,18 @@ fn set(node: &mut Value, path: &[String], value: Value) -> Result<(), String> {
 	set(child, &path[1..], value)
 }
 
-/// 返回删除后这个节点是否变成了空对象。
+/// 返回是否真的删除了键。只有删除了键，才清理因此变空的上级，原本就空的对象（如 `"env": {}`）保留。
 fn remove(node: &mut Value, path: &[String]) -> bool {
 	let Some(map) = node.as_object_mut() else { return false };
 	if path.len() == 1 {
-		map.shift_remove(&path[0]);
-	} else if let Some(child) = map.get_mut(&path[0]) {
-		if remove(child, &path[1..]) {
-			map.shift_remove(&path[0]);
-		}
+		return map.shift_remove(&path[0]).is_some();
 	}
-	map.is_empty()
+	let Some(child) = map.get_mut(&path[0]) else { return false };
+	let removed = remove(child, &path[1..]);
+	if removed && child.as_object().is_some_and(Map::is_empty) {
+		map.shift_remove(&path[0]);
+	}
+	removed
 }
 
 pub fn parse(text: &str) -> Result<Value, String> {
@@ -121,22 +127,43 @@ pub fn read(path: &Path) -> Result<Option<(Value, Format)>, String> {
 	}
 }
 
-/// 先写临时文件再改名，保留原文件权限；改名失败（如 Windows 上文件被占用）时直接覆盖。
-pub fn write_atomic(path: &Path, text: &str) -> Result<(), String> {
+/// 先写临时文件再改名替换；改名失败（如 Windows 上文件被占用）时直接覆盖。
+///
+/// - 路径是符号链接时写到链接指向的文件，链接本身保留。
+/// - 临时文件一开始就只有当前用户可读写，再改成原文件的权限；新文件用 `new_mode`。
+pub fn write_atomic(path: &Path, text: &str, new_mode: u32) -> Result<(), String> {
+	let path = fs::canonicalize(path).unwrap_or_else(|_| path.to_path_buf());
 	if let Some(dir) = path.parent() {
 		fs::create_dir_all(dir).map_err(|e| format!("创建目录失败：{e}"))?;
 	}
-	let perms = fs::metadata(path).ok().map(|m| m.permissions());
+	let perms = fs::metadata(&path).ok().map(|m| m.permissions());
 	let mut tmp = path.as_os_str().to_owned();
 	tmp.push(".vanity-tmp");
-	let tmp = std::path::PathBuf::from(tmp);
-	fs::write(&tmp, text).map_err(|e| format!("写入失败：{e}"))?;
-	if let Some(p) = perms {
-		let _ = fs::set_permissions(&tmp, p);
-	}
-	if fs::rename(&tmp, path).is_err() {
+	let tmp = PathBuf::from(tmp);
+	let write_tmp = || -> io::Result<()> {
+		let mut opts = fs::OpenOptions::new();
+		opts.write(true).create(true).truncate(true);
+		#[cfg(unix)]
+		std::os::unix::fs::OpenOptionsExt::mode(&mut opts, 0o600);
+		opts.open(&tmp)?.write_all(text.as_bytes())?;
+		match perms {
+			Some(p) => fs::set_permissions(&tmp, p),
+			#[cfg(unix)]
+			None => fs::set_permissions(&tmp, std::os::unix::fs::PermissionsExt::from_mode(new_mode)),
+			#[cfg(not(unix))]
+			None => {
+				let _ = new_mode;
+				Ok(())
+			}
+		}
+	};
+	if let Err(e) = write_tmp() {
 		let _ = fs::remove_file(&tmp);
-		fs::write(path, text).map_err(|e| format!("写入失败：{e}"))?;
+		return Err(format!("写入失败：{e}"));
+	}
+	if fs::rename(&tmp, &path).is_err() {
+		let _ = fs::remove_file(&tmp);
+		fs::write(&path, text).map_err(|e| format!("写入失败：{e}"))?;
 	}
 	Ok(())
 }
@@ -147,7 +174,7 @@ pub fn patch(path: &Path, ops: &[Op]) -> Result<Value, String> {
 	for op in ops {
 		apply(&mut root, op)?;
 	}
-	write_atomic(path, &serialize(&root, &format))?;
+	write_atomic(path, &serialize(&root, &format), 0o644)?;
 	Ok(root)
 }
 
@@ -193,6 +220,10 @@ mod tests {
 		let mut v = json!({ "env": { "A": "1" }, "x": 1 });
 		apply(&mut v, &op("env.A", None)).unwrap();
 		assert_eq!(v, json!({ "x": 1 }));
+		let mut empty = json!({ "env": {}, "sandbox": { "network": {} } });
+		apply(&mut empty, &op("env.A", None)).unwrap();
+		apply(&mut empty, &op("sandbox.network.x", None)).unwrap();
+		assert_eq!(empty, json!({ "env": {}, "sandbox": { "network": {} } }));
 		apply(&mut v, &op("missing.deep", None)).unwrap();
 		assert_eq!(v, json!({ "x": 1 }));
 		apply(&mut v, &op("x", Some(Value::Null))).unwrap();
@@ -217,6 +248,25 @@ mod tests {
 		fs::write(&path, "{ broken").unwrap();
 		assert!(patch(&path, &[op("a", Some(json!(1)))]).is_err());
 		assert_eq!(fs::read_to_string(&path).unwrap(), "{ broken");
+	}
+
+	#[test]
+	fn keeps_bom() {
+		let text = "\u{feff}{\n  \"a\": 1\n}\n";
+		assert_eq!(serialize(&parse(text).unwrap(), &detect_format(text)), text);
+	}
+
+	#[cfg(unix)]
+	#[test]
+	fn writes_through_symlinks() {
+		let dir = tempfile::tempdir().unwrap();
+		let target = dir.path().join("real.json");
+		let link = dir.path().join("settings.json");
+		fs::write(&target, "{}").unwrap();
+		std::os::unix::fs::symlink(&target, &link).unwrap();
+		patch(&link, &[op("a", Some(json!(1)))]).unwrap();
+		assert!(fs::symlink_metadata(&link).unwrap().file_type().is_symlink());
+		assert_eq!(fs::read_to_string(&target).unwrap(), "{\n  \"a\": 1\n}");
 	}
 
 	#[cfg(unix)]

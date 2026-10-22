@@ -4,21 +4,24 @@
     "group": "隐私与更新",
     "type": "flag",
     "label": "关闭遥测",
-    "desc": "不再发送遥测事件（事件本身不含代码、文件路径和 Bash 命令），同时停止拉取 feature flag。任何非空值（包括 0）都算关闭，删除变量才恢复。"
+    "desc": "不再发送遥测事件（事件本身不含代码、文件路径和 Bash 命令），同时停止拉取 feature flag。任何非空值（包括 0）都算关闭，删除变量才恢复。",
+    "any": true
   },
   {
     "name": "DISABLE_ERROR_REPORTING",
     "group": "隐私与更新",
     "type": "flag",
     "label": "关闭错误上报",
-    "desc": "不再上报错误。任何非空值（包括 0）都算关闭，删除变量才恢复。"
+    "desc": "不再上报错误。任何非空值（包括 0）都算关闭，删除变量才恢复。",
+    "any": true
   },
   {
     "name": "CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC",
     "group": "隐私与更新",
     "type": "flag",
     "label": "关闭非必要网络流量",
-    "desc": "一次关掉自动更新、遥测、错误上报、/feedback、release notes、PR/MR 状态徽章检查和 fast mode 等可用性检查；也会停止拉取 feature flag，Remote Control 等依赖它的功能随之不可用。任何非空值（包括 0）都生效，删除变量才恢复。"
+    "desc": "一次关掉自动更新、遥测、错误上报、/feedback、release notes、PR/MR 状态徽章检查和 fast mode 等可用性检查；也会停止拉取 feature flag，Remote Control 等依赖它的功能随之不可用。任何非空值（包括 0）都生效，删除变量才恢复。",
+    "any": true
   },
   {
     "name": "CLAUDE_CODE_DISABLE_FEEDBACK_SURVEY",
@@ -48,7 +51,9 @@
     "type": "string",
     "label": "HTTP 代理",
     "desc": "网络连接使用的 HTTP 代理地址，URL 里可以带用户名和密码。",
-    "suggestions": ["http://127.0.0.1:7890"]
+    "suggestions": [
+      "http://127.0.0.1:7890"
+    ]
   },
   {
     "name": "HTTPS_PROXY",
@@ -56,7 +61,9 @@
     "type": "string",
     "label": "HTTPS 代理",
     "desc": "网络连接使用的 HTTPS 代理地址，URL 里可以带用户名和密码。",
-    "suggestions": ["http://127.0.0.1:7890"]
+    "suggestions": [
+      "http://127.0.0.1:7890"
+    ]
   },
   {
     "name": "NO_PROXY",
@@ -64,7 +71,9 @@
     "type": "string",
     "label": "不走代理的地址",
     "desc": "直接连接、不经过代理的域名和 IP 列表。",
-    "suggestions": ["localhost,127.0.0.1"]
+    "suggestions": [
+      "localhost,127.0.0.1"
+    ]
   },
   {
     "name": "API_TIMEOUT_MS",
@@ -72,7 +81,11 @@
     "type": "number",
     "label": "API 请求超时（毫秒）",
     "desc": "每次 API 请求等待响应头的时间，单位毫秒，默认 600000（10 分钟），最大 2147483647；不限制流式响应开始后的时长，但非流式请求必须在此时间内完成。网络慢或走代理时调大；设为 0 取消限制（需要 v2.1.305 或更高版本）。",
-    "suggestions": ["600000", "1200000", "3000000"]
+    "suggestions": [
+      "600000",
+      "1200000",
+      "3000000"
+    ]
   },
   {
     "name": "CLAUDE_CODE_MAX_RETRIES",
@@ -102,12 +115,30 @@
     "label": "Effort 等级",
     "desc": "设置支持 effort 的模型的推理强度，可用等级取决于模型。优先于 --effort、/effort 以及 effortLevel、modelSettings 设置，但仍受 maxEffortLevel 限制。",
     "options": [
-      { "value": "auto", "label": "auto（模型默认）" },
-      { "value": "low", "label": "low" },
-      { "value": "medium", "label": "medium" },
-      { "value": "high", "label": "high" },
-      { "value": "xhigh", "label": "xhigh" },
-      { "value": "max", "label": "max" }
+      {
+        "value": "auto",
+        "label": "auto（模型默认）"
+      },
+      {
+        "value": "low",
+        "label": "low"
+      },
+      {
+        "value": "medium",
+        "label": "medium"
+      },
+      {
+        "value": "high",
+        "label": "high"
+      },
+      {
+        "value": "xhigh",
+        "label": "xhigh"
+      },
+      {
+        "value": "max",
+        "label": "max"
+      }
     ]
   },
   {
@@ -130,7 +161,10 @@
     "type": "number",
     "label": "自动压缩触发百分比",
     "desc": "上下文用到 auto-compact 窗口的百分之多少（1-100）时触发自动压缩，主对话和 subagent 都适用。只能调低以提前压缩，高于默认百分比的值会被忽略。",
-    "suggestions": ["50", "70"]
+    "suggestions": [
+      "50",
+      "70"
+    ]
   },
   {
     "name": "DISABLE_PROMPT_CACHING",
@@ -152,7 +186,12 @@
     "type": "string",
     "label": "MCP tool search",
     "desc": "控制 MCP 工具定义是否延迟加载。不设或 true：延迟加载 MCP 工具；auto：工具定义占到上下文窗口 10% 时开启；auto:N：自定义阈值百分比，如 auto:5；false：启动时加载全部工具。",
-    "suggestions": ["true", "auto", "auto:5", "false"]
+    "suggestions": [
+      "true",
+      "auto",
+      "auto:5",
+      "false"
+    ]
   },
   {
     "name": "BASH_DEFAULT_TIMEOUT_MS",
@@ -160,7 +199,11 @@
     "type": "number",
     "label": "Bash 默认超时（毫秒）",
     "desc": "前台 Bash 或 PowerShell 命令的默认超时，单位毫秒，默认 120000（2 分钟）。",
-    "suggestions": ["120000", "300000", "600000"]
+    "suggestions": [
+      "120000",
+      "300000",
+      "600000"
+    ]
   },
   {
     "name": "BASH_MAX_TIMEOUT_MS",
@@ -168,7 +211,11 @@
     "type": "number",
     "label": "Bash 最大超时（毫秒）",
     "desc": "模型给前台 Bash 或 PowerShell 命令设置超时的上限，单位毫秒，默认 600000（10 分钟）。实际上限取它和 BASH_DEFAULT_TIMEOUT_MS 中较大的一个。",
-    "suggestions": ["600000", "1200000", "3600000"]
+    "suggestions": [
+      "600000",
+      "1200000",
+      "3600000"
+    ]
   },
   {
     "name": "BASH_MAX_OUTPUT_LENGTH",
