@@ -165,7 +165,9 @@
 
 - `npm run dev` 启动开发版。为了不动自己的配置，先建一个临时目录，复制一份 `settings.json` 和 `.claude.json` 进去，再用 `CLAUDE_CONFIG_DIR=<临时目录> VANITY_CASE_DIR=<临时目录>/vanity npm run dev` 启动。
 - `npm test` 运行 `test/` 下的 JS 测试和 Rust 单元测试。JS 测试覆盖 `logic.js`；Rust 测试覆盖格式保留、路径修改、损坏文件的处理和模型列表解析，并用 Tauri 的 mock runtime 按界面发送的 JSON 调用命令，核对参数名。
-- 图标的源文件是 `assets/icon.svg`。修改后先导出为 1024×1024 的 PNG，再运行 `npx tauri icon <png> -o src-tauri/icons` 生成各平台图标，删掉生成的 `android/`、`ios/` 和 `Square*` 文件。
+- 图片原图放在 `assets/`：`icon.png` 是应用图标，`logo.png` 是 README 顶部的徽章，`icon-alt.png` 是同一形象的另一版，没有使用。原图都是 1254×1254 的透明背景 PNG。
+- 更换应用图标：把原图裁掉透明边，四周加约 5% 的透明边距，缩放为 1024×1024 的 PNG，再运行 `npx tauri icon <png> -o src-tauri/icons` 生成各平台图标。生成的文件只保留 `tauri.conf.json` 的 `bundle.icon` 列出的几个和 `icon.png`，其余删掉。
+- 侧栏左上角的 `ui/logo.png` 是 `icon.png` 裁掉透明边后缩放成的 128×128 图片；README 用的 `assets/logo-600.png` 是 `logo.png` 缩放成的 600×600 图片。更换原图后同步重新生成。
 
 ## 发布
 

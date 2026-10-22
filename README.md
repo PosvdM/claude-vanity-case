@@ -1,3 +1,5 @@
+<p align="center"><img src="assets/logo-600.png" alt="妆奁 Vanity Case" width="280"></p>
+
 # 妆奁 · Vanity Case
 
 编辑 Claude Code 配置文件的桌面小工具，支持 macOS（Apple 芯片）和 Windows。需要改配置时打开，改完关掉窗口程序就退出；不常驻后台，也不代理 Claude Code 的请求。
