@@ -8,7 +8,7 @@
   "scripts": {
     "dev": "tauri dev",
     "build": "tauri build",
-    "test": "node --test test/ && cargo test --manifest-path src-tauri/Cargo.toml",
+    "test": "node --test test/*.test.mjs && cargo test --manifest-path src-tauri/Cargo.toml",
     "update-docs": "node scripts/update-docs.mjs"
   },
   "devDependencies": {

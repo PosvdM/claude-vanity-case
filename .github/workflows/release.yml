@@ -32,7 +32,7 @@ jobs:
         with:
           workspaces: src-tauri
       - run: npm ci
-      - run: node --test test/
+      - run: node --test test/*.test.mjs
       - uses: tauri-apps/tauri-action@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
