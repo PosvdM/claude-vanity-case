@@ -1,6 +1,6 @@
 name: 发布
 
-# 推送 v* 标签时构建 macOS（通用二进制）和 Windows 安装包，上传到同名的草稿 Release。
+# 推送 v* 标签时构建 macOS（Apple 芯片）和 Windows（64 位）的安装版和便携版，上传到同名的草稿 Release。
 on:
   push:
     tags: ["v*"]
@@ -14,12 +14,12 @@ jobs:
       matrix:
         include:
           - os: macos-latest
-            args: --target universal-apple-darwin
-            targets: aarch64-apple-darwin,x86_64-apple-darwin
+            target: aarch64-apple-darwin
           - os: windows-latest
-            args: ""
-            targets: ""
+            target: x86_64-pc-windows-msvc
     runs-on: ${{ matrix.os }}
+    env:
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     steps:
       - uses: actions/checkout@v7
       - uses: actions/setup-node@v7
@@ -27,7 +27,7 @@ jobs:
           node-version: 22
       - uses: dtolnay/rust-toolchain@stable
         with:
-          targets: ${{ matrix.targets }}
+          targets: ${{ matrix.target }}
       - uses: Swatinem/rust-cache@v2
         with:
           workspaces: src-tauri
@@ -40,4 +40,30 @@ jobs:
           tagName: ${{ github.ref_name }}
           releaseName: 妆奁 Vanity Case ${{ github.ref_name }}
           releaseDraft: true
-          args: ${{ matrix.args }}
+          args: --target ${{ matrix.target }}
+
+      # 便携版：macOS 的 .app 是个文件夹，Release 只能传单个文件，所以打成 zip；Windows 直接传编译出来的 exe。
+      - name: 上传 macOS 便携版
+        if: runner.os == 'macOS'
+        shell: bash
+        run: |
+          ver="${GITHUB_REF_NAME#v}"
+          cd "src-tauri/target/${{ matrix.target }}/release/bundle/macos"
+          ditto -c -k --keepParent "Vanity Case.app" "Vanity.Case_${ver}_aarch64.zip"
+          gh release upload "$GITHUB_REF_NAME" "Vanity.Case_${ver}_aarch64.zip" --clobber -R "$GITHUB_REPOSITORY"
+      - name: 上传 Windows 便携版
+        if: runner.os == 'Windows'
+        shell: bash
+        run: |
+          ver="${GITHUB_REF_NAME#v}"
+          cp "src-tauri/target/${{ matrix.target }}/release/vanity-case.exe" "Vanity.Case_${ver}_x64-portable.exe"
+          gh release upload "$GITHUB_REF_NAME" "Vanity.Case_${ver}_x64-portable.exe" --clobber -R "$GITHUB_REPOSITORY"
+
+      # tauri-action 为自动更新上传的 .app.tar.gz 用不上（妆奁不做自动更新），删掉免得误下。
+      - name: 删除自动更新包
+        if: runner.os == 'macOS'
+        shell: bash
+        run: |
+          gh release view "$GITHUB_REF_NAME" -R "$GITHUB_REPOSITORY" --json assets --jq '.assets[].name' \
+            | { grep '\.app\.tar\.gz$' || true; } \
+            | while read -r name; do gh release delete-asset "$GITHUB_REF_NAME" "$name" -y -R "$GITHUB_REPOSITORY"; done

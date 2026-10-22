@@ -170,7 +170,10 @@
 ## 发布
 
 1. 同步修改 `package.json`、`src-tauri/Cargo.toml` 和 `src-tauri/tauri.conf.json` 里的版本号。
-2. 推送 `v<版本号>` 标签。`.github/workflows/release.yml` 在 macOS 上构建通用二进制的 `.app` 和 `.dmg`，在 Windows 上构建 NSIS 安装包，上传到同名的草稿 Release。
+2. 推送 `v<版本号>` 标签。`.github/workflows/release.yml` 构建以下文件，上传到同名的草稿 Release：
+   - macOS（`aarch64-apple-darwin`）：`.dmg`，以及把 `.app` 用 `ditto` 打成的 `_aarch64.zip`。`.app` 是目录，Release 只能上传单个文件，所以打包。
+   - Windows（`x86_64-pc-windows-msvc`）：NSIS 安装包 `_x64-setup.exe`，以及编译出的 `vanity-case.exe` 改名为 `_x64-portable.exe`。
+   - tauri-action 为自动更新上传的 `.app.tar.gz` 会被删掉，妆奁不做自动更新。
 3. 在 GitHub 上补写发布说明，再发布草稿。
 
-安装包没有签名，也没有公证。
+只构建 Apple 芯片的 macOS 版本，不支持 Intel Mac。程序没有签名，也没有公证。

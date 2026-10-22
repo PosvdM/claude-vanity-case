@@ -1,6 +1,6 @@
 # 妆奁 · Vanity Case
 
-编辑 Claude Code 配置文件的桌面小工具，支持 macOS 和 Windows。需要改配置时打开，改完关掉窗口程序就退出；不常驻后台，也不代理 Claude Code 的请求。
+编辑 Claude Code 配置文件的桌面小工具，支持 macOS（Apple 芯片）和 Windows。需要改配置时打开，改完关掉窗口程序就退出；不常驻后台，也不代理 Claude Code 的请求。
 
 所有修改直接写进 Claude Code 自己的配置文件（`~/.claude/settings.json` 和 `~/.claude.json`）。不打开妆奁时，Claude Code 照常读取这些文件。
 
@@ -15,10 +15,14 @@
 
 从 [Releases](https://github.com/PosvdM/claude-vanity-case/releases) 下载：
 
-- macOS：`.dmg`，同时支持 Apple 芯片和 Intel 芯片。
-- Windows：`-setup.exe` 安装包。Windows 10 和 11 自带所需的 WebView2。
+| 系统 | 安装版 | 便携版 |
+|---|---|---|
+| macOS 11 或更高版本，Apple 芯片 | `_aarch64.dmg`：打开后把妆奁拖进「应用程序」 | `_aarch64.zip`：解压出 `Vanity Case.app`，放在任何位置都能运行 |
+| Windows 10/11，64 位 | `_x64-setup.exe`：创建开始菜单项，可以卸载 | `_x64-portable.exe`：单个 exe，双击运行 |
 
-安装包没有签名。macOS 第一次打开时，在「应用程序」里右键点妆奁，选择"打开"；Windows 弹出 SmartScreen 提示时，点"更多信息"再点"仍要运行"。
+- Windows 便携版需要系统里有 WebView2。Windows 10 和 11 自带；没有时用安装版，它会自动安装 WebView2。
+- 便携版只是免安装，API 配置和模板仍然保存在系统的用户数据目录里，见[读写的文件](#读写的文件)。
+- 程序没有签名。macOS 第一次打开时，右键点妆奁，选择"打开"；Windows 弹出 SmartScreen 提示时，点"更多信息"，再点"仍要运行"。
 
 ## 使用
 
