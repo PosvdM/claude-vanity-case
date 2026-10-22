@@ -1,0 +1,202 @@
+advisorModel	Model and responses	Any file
+agent	Agents, sessions, and worktrees	Any file
+agentPushNotifEnabled	Remote, desktop, and notifications	Any file
+allowedHttpHookUrls	Hooks and automation	Any file
+allowedMcpServers	MCP	Any file
+alwaysThinkingEnabled	Model and responses	Any file
+apiKeyHelper	Authentication and providers	Any file
+askUserQuestionTimeout	Interface and terminal	User or managed
+appendPlugins	Plugins and skills	User or managed
+attribution	Git and attribution	Any file
+attribution.commit	Git and attribution	Any file
+attribution.pr	Git and attribution	Any file
+attribution.sessionUrl	Git and attribution	Any file
+autoCompactEnabled	Memory and context	Any file
+autoCompactWindow	Memory and context	Any file
+autoConnectIde	Global config settings	Global config
+autoContinueAtUsageLimit	Interface and terminal	User or managed
+autoInstallIdeExtension	Global config settings	Global config
+autoMemoryDirectory	Memory and context	Any file
+autoMemoryEnabled	Memory and context	Any file
+autoMode	Permission settings	User or managed
+autoMode.classifyAllShell	Permission settings	User or managed
+autoScrollEnabled	Interface and terminal	Any file
+autoUpdatesChannel	Updates and versioning	Any file
+availableModels	Model and responses	Any file
+awaySummaryEnabled	Remote, desktop, and notifications	Any file
+awsAuthRefresh	Authentication and providers	Any file
+awsCredentialExport	Authentication and providers	Any file
+axScreenReader	Interface and terminal	Any file
+bashEditDiffEnabled	Interface and terminal	User or managed
+bashOutputMaxChars	Memory and context	Any file
+claudeInChromeDefaultEnabled	Global config settings	Global config
+claudeMdExcludes	Memory and context	Any file
+cleanupPeriodDays	Privacy and telemetry	Any file
+companyAnnouncements	Interface and terminal	Any file
+copyFullResponse	Global config settings	Global config
+copyOnSelect	Global config settings	Global config
+crossSessionInbound	Agents, sessions, and worktrees	Any file
+defaultShell	Interface and terminal	Any file
+defaultToAgentsView	Global config settings	Global config
+deniedMcpServers	MCP	Any file
+desktopSessionCleanupPeriodDays	Privacy and telemetry	User or managed
+dialogExpiry	Interface and terminal	User or managed
+diffTool	Global config settings	Global config
+disableAgentView	Agents, sessions, and worktrees	Any file
+disableAllHooks	Hooks and automation	Any file
+disableArtifact	Remote, desktop, and notifications	Any file
+disableAutoMode	Permission settings	Any file
+disableBundledSkills	Plugins and skills	Any file
+disableClaudeAiConnectors	MCP	Any file
+disableDeepLinkRegistration	Remote, desktop, and notifications	Any file
+disabledMcpjsonServers	MCP	Any file
+disableRemoteControl	Remote, desktop, and notifications	Any file
+disableSkillShellExecution	Plugins and skills	Any file
+disableWorkflows	Hooks and automation	Any file
+editorMode	Interface and terminal	Any file
+effortLevel	Model and responses	Any file
+emojiCompletionEnabled	Interface and terminal	Any file
+enableAllProjectMcpServers	MCP	Any file
+enableArtifact	Remote, desktop, and notifications	Any file
+enabledMcpjsonServers	MCP	Any file
+enabledPlugins	Plugins and skills	Any file
+enableWorkflows	Hooks and automation	Any file
+enforceAvailableModels	Model and responses	Any file
+env	Memory and context	Any file
+externalEditorContext	Global config settings	Global config
+extraKnownMarketplaces	Plugins and skills	Any file
+fallbackModel	Model and responses	Any file
+fastMode	Model and responses	Any file
+fastModePerSessionOptIn	Model and responses	Any file
+feedbackDrafts	Privacy and telemetry	User or managed
+feedbackSurveyRate	Privacy and telemetry	Any file
+fileCheckpointingEnabled	Memory and context	Any file
+fileSuggestion	Interface and terminal	Any file
+footerLinksRegexes	Interface and terminal	User or managed
+forceLoginGatewayUrl	Authentication and providers	User or managed
+forceLoginMethod	Authentication and providers	Any file
+forceLoginOrgUUID	Authentication and providers	Any file
+gcpAuthRefresh	Authentication and providers	Any file
+hooks	Hooks and automation	Any file
+httpHookAllowedEnvVars	Hooks and automation	Any file
+idleCompaction	Memory and context	Any file
+includeCoAuthoredBy	Git and attribution	Any file
+includeGitInstructions	Git and attribution	Any file
+inputNeededNotifEnabled	Remote, desktop, and notifications	Any file
+isolatePeerMachines	Agents, sessions, and worktrees	Any file
+keybindingFlavor	Interface and terminal	Any file
+language	Model and responses	Any file
+leftArrowOpensAgents	Global config settings	Global config
+maxEffortLevel	Model and responses	Any file
+maxProseWidth	Interface and terminal	Any file
+minimumVersion	Updates and versioning	Any file
+model	Model and responses	Any file
+modelOverrides	Model and responses	Any file
+modelPicker	Model and responses	User or managed
+modelSettings	Model and responses	Any file
+otelHeadersHelper	Authentication and providers	Any file
+outputStyle	Model and responses	Any file
+permissionExplainerEnabled	Global config settings	Global config
+permissions	Permission settings	Any file
+permissions.additionalDirectories	Permission settings	Any file
+permissions.allow	Permission settings	Any file
+permissions.ask	Permission settings	Any file
+permissions.blockReadsOutsideWorkingDirectories	Permission settings	Any file
+permissions.defaultMode	Permission settings	Any file
+permissions.deny	Permission settings	Any file
+permissions.disableBypassPermissionsMode	Permission settings	Any file
+plansDirectory	Memory and context	Any file
+pluginConfigs	Plugins and skills	User or managed
+preferredNotifChannel	Remote, desktop, and notifications	Any file
+prefersReducedMotion	Interface and terminal	Any file
+prependPlugins	Plugins and skills	User or managed
+processWrapper	Agents, sessions, and worktrees	User or managed
+promptCacheTtl	Model and responses	Any file
+promptSuggestionEnabled	Interface and terminal	Any file
+prStatusFooterEnabled	Global config settings	Global config
+prUrlTemplate	Git and attribution	Any file
+remote.defaultEnvironmentId	Remote, desktop, and notifications	Any file
+remoteControlAtStartup	Remote, desktop, and notifications	Any file
+respectGitignore	Interface and terminal	Any file
+respondToBashCommands	Interface and terminal	Any file
+sandbox	Sandbox settings	Any file
+sandbox.allowAppleEvents	Sandbox settings	User or managed
+sandbox.allowNestedUserNamespaces	Sandbox settings	User or managed
+sandbox.allowUnsandboxedCommands	Sandbox settings	Any file
+sandbox.autoAllowBashIfSandboxed	Sandbox settings	Any file
+sandbox.credentials	Sandbox settings	Any file
+sandbox.credentials.allowPlaintextInject	Sandbox settings	User or managed
+sandbox.credentials.awsPairs	Sandbox settings	User or managed
+sandbox.credentials.envVars	Sandbox settings	Any file
+sandbox.credentials.files	Sandbox settings	Any file
+sandbox.credentials.sigv4	Sandbox settings	User or managed
+sandbox.enabled	Sandbox settings	Any file
+sandbox.enableWeakerNestedSandbox	Sandbox settings	Any file
+sandbox.enableWeakerNetworkIsolation	Sandbox settings	Any file
+sandbox.excludedCommands	Sandbox settings	Any file
+sandbox.failIfUnavailable	Sandbox settings	Any file
+sandbox.filesystem	Sandbox settings	Any file
+sandbox.filesystem.allowRead	Sandbox settings	Any file
+sandbox.filesystem.allowWrite	Sandbox settings	Any file
+sandbox.filesystem.denyRead	Sandbox settings	Any file
+sandbox.filesystem.denyWrite	Sandbox settings	Any file
+sandbox.filesystem.disabled	Sandbox settings	User or managed
+sandbox.ignoreViolations	Sandbox settings	Any file
+sandbox.network	Sandbox settings	Any file
+sandbox.network.allowAllUnixSockets	Sandbox settings	Any file
+sandbox.network.allowedDomains	Sandbox settings	Any file
+sandbox.network.allowLocalBinding	Sandbox settings	Any file
+sandbox.network.allowMachLookup	Sandbox settings	Any file
+sandbox.network.allowUnixSockets	Sandbox settings	Any file
+sandbox.network.deniedDomains	Sandbox settings	Any file
+sandbox.network.httpProxyPort	Sandbox settings	Any file
+sandbox.network.socksProxyPort	Sandbox settings	Any file
+sandbox.network.strictAllowlist	Sandbox settings	User or managed
+sandbox.network.tlsTerminate	Sandbox settings	User or managed
+sandbox.ripgrep	Sandbox settings	User or managed
+showClearContextOnPlanAccept	Interface and terminal	Any file
+showThinkingSummaries	Model and responses	Any file
+showTurnDuration	Interface and terminal	Any file
+skillListingBudgetFraction	Memory and context	Any file
+skillListingMaxDescChars	Memory and context	Any file
+skillOverrides	Plugins and skills	Any file
+skipAutoPermissionPrompt	Permission settings	User or managed
+skipDangerousModePermissionPrompt	Permission settings	User, local, or managed
+skipWebFetchPreflight	Privacy and telemetry	Any file
+spellcheck	Interface and terminal	User or managed
+spinnerTipsEnabled	Interface and terminal	Any file
+spinnerTipsOverride	Interface and terminal	Any file
+spinnerVerbs	Interface and terminal	Any file
+sshConfigs	Remote, desktop, and notifications	User or managed
+statusLine	Interface and terminal	Any file
+subagentPromptCacheTtl	Model and responses	Any file
+subagentStatusLine	Interface and terminal	Any file
+switchModelsOnFlag	Model and responses	Any file
+syncClaudeAiPlugins	Plugins and skills	User, local, or managed
+syncClaudeAiSkills	Plugins and skills	User, local, or managed
+syntaxHighlightingDisabled	Interface and terminal	Any file
+taskOutputMaxChars	Memory and context	Any file
+teammateDefaultModel	Global config settings	Global config
+teammateMode	Agents, sessions, and worktrees	Any file
+terminalProgressBarEnabled	Interface and terminal	Any file
+terminalTitleFromRename	Interface and terminal	Any file
+theme	Interface and terminal	Any file
+timeFormat	Interface and terminal	Any file
+timeZone	Interface and terminal	Any file
+tui	Interface and terminal	Any file
+ultracode	Model and responses	Any file
+useAutoModeDuringPlan	Permission settings	User, local, or managed
+verbose	Interface and terminal	Any file
+viewMode	Interface and terminal	Any file
+vimInsertModeRemaps	Interface and terminal	User or managed
+voice	Interface and terminal	Any file
+voiceEnabled	Interface and terminal	Any file
+wheelScrollAccelerationEnabled	Interface and terminal	Any file
+workflowKeywordTriggerEnabled	Hooks and automation	Any file
+workflowSizeGuideline	Hooks and automation	Any file
+worktree	Agents, sessions, and worktrees	Any file
+worktree.baseRef	Agents, sessions, and worktrees	Any file
+worktree.bgIsolation	Agents, sessions, and worktrees	Any file
+worktree.location	Agents, sessions, and worktrees	User
+worktree.sparsePaths	Agents, sessions, and worktrees	Any file
+worktree.symlinkDirectories	Agents, sessions, and worktrees	Any file

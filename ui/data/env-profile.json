@@ -1,0 +1,192 @@
+[
+  {
+    "name": "ANTHROPIC_BASE_URL",
+    "group": "API",
+    "type": "string",
+    "label": "API 地址",
+    "desc": "替换 API endpoint，让请求经过代理或 LLM 网关。v2.1.196 起，指向 api.anthropic.com 以外的主机时 Remote Control 不可用。",
+    "suggestions": ["https://api.anthropic.com"]
+  },
+  {
+    "name": "ANTHROPIC_AUTH_TOKEN",
+    "group": "API",
+    "type": "string",
+    "label": "Auth Token",
+    "desc": "作为 Authorization 请求头发送的值，Claude Code 会自动加上 \"Bearer \" 前缀。"
+  },
+  {
+    "name": "ANTHROPIC_API_KEY",
+    "group": "API",
+    "type": "string",
+    "label": "API Key",
+    "desc": "作为 X-Api-Key 请求头发送的 API key。设置后即使已登录也优先于 Pro、Max、Team、Enterprise 订阅：-p 模式直接使用，交互模式首次使用前要确认一次。"
+  },
+  {
+    "name": "ANTHROPIC_CUSTOM_HEADERS",
+    "group": "API",
+    "type": "string",
+    "label": "自定义请求头",
+    "desc": "附加到每个请求的请求头，格式为 Name: Value，多个请求头用换行分隔。名称或值里有 HTTP 头不允许的字符（如弯引号、零宽空格）时请求会失败。"
+  },
+  {
+    "name": "ANTHROPIC_MODEL",
+    "group": "API",
+    "type": "string",
+    "label": "默认模型",
+    "desc": "会话使用的模型，填别名或完整模型 ID。优先于 model 设置，但会被 --model 和 /model 覆盖。",
+    "suggestions": ["opus", "sonnet", "haiku", "fable", "best", "opusplan", "opus[1m]", "sonnet[1m]"]
+  },
+  {
+    "name": "CLAUDE_CODE_SUBAGENT_MODEL",
+    "group": "API",
+    "type": "string",
+    "label": "Subagent 模型",
+    "desc": "subagent、agent team 成员和 workflow agent 在没有另行指定时使用的模型，可填别名或完整模型名。调用时传入的模型和 agent 定义里的 model 字段优先于它；设为 inherit 等同于不设。",
+    "suggestions": ["haiku", "sonnet", "opus", "inherit"]
+  },
+  {
+    "name": "ANTHROPIC_DEFAULT_OPUS_MODEL",
+    "group": "API",
+    "type": "string",
+    "label": "Opus 模型 ID",
+    "desc": "opus 别名实际使用的模型 ID，opusplan 在 Plan Mode 下也用它。填完整模型名或提供商对应的 ID。"
+  },
+  {
+    "name": "ANTHROPIC_DEFAULT_OPUS_MODEL_NAME",
+    "group": "API",
+    "type": "string",
+    "label": "Opus 显示名称",
+    "desc": "/model 选择器里 Opus 这一行显示的名称。不设时，能识别的模型 ID 显示模型名，否则显示 ID；在第三方提供商和 LLM 网关上生效，直连 api.anthropic.com 无效。"
+  },
+  {
+    "name": "ANTHROPIC_DEFAULT_OPUS_MODEL_DESCRIPTION",
+    "group": "API",
+    "type": "string",
+    "label": "Opus 显示说明",
+    "desc": "/model 选择器里 Opus 这一行显示的说明，不设时默认说明以 \"Custom Opus model\" 开头。在第三方提供商和 LLM 网关上生效，直连 api.anthropic.com 无效。"
+  },
+  {
+    "name": "ANTHROPIC_DEFAULT_OPUS_MODEL_SUPPORTED_CAPABILITIES",
+    "group": "API",
+    "type": "string",
+    "label": "Opus 支持的能力",
+    "desc": "逗号分隔的能力列表，如 effort,thinking。设置后只启用列出的能力、关闭未列出的；不设则按模型 ID 自动识别。文档说明它在 Amazon Bedrock、Google Cloud Agent Platform、Microsoft Foundry 等第三方提供商上生效。",
+    "suggestions": ["effort", "xhigh_effort", "max_effort", "thinking", "adaptive_thinking", "interleaved_thinking"]
+  },
+  {
+    "name": "ANTHROPIC_DEFAULT_SONNET_MODEL",
+    "group": "API",
+    "type": "string",
+    "label": "Sonnet 模型 ID",
+    "desc": "sonnet 别名实际使用的模型 ID，opusplan 在 Plan Mode 之外也用它。填完整模型名或提供商对应的 ID。"
+  },
+  {
+    "name": "ANTHROPIC_DEFAULT_SONNET_MODEL_NAME",
+    "group": "API",
+    "type": "string",
+    "label": "Sonnet 显示名称",
+    "desc": "/model 选择器里 Sonnet 这一行显示的名称。不设时，能识别的模型 ID 显示模型名，否则显示 ID；在第三方提供商和 LLM 网关上生效，直连 api.anthropic.com 无效。"
+  },
+  {
+    "name": "ANTHROPIC_DEFAULT_SONNET_MODEL_DESCRIPTION",
+    "group": "API",
+    "type": "string",
+    "label": "Sonnet 显示说明",
+    "desc": "/model 选择器里 Sonnet 这一行显示的说明，不设时默认说明以 \"Custom Sonnet model\" 开头。在第三方提供商和 LLM 网关上生效，直连 api.anthropic.com 无效。"
+  },
+  {
+    "name": "ANTHROPIC_DEFAULT_SONNET_MODEL_SUPPORTED_CAPABILITIES",
+    "group": "API",
+    "type": "string",
+    "label": "Sonnet 支持的能力",
+    "desc": "逗号分隔的能力列表，如 effort,thinking。设置后只启用列出的能力、关闭未列出的；不设则按模型 ID 自动识别。文档说明它在 Amazon Bedrock、Google Cloud Agent Platform、Microsoft Foundry 等第三方提供商上生效。",
+    "suggestions": ["effort", "xhigh_effort", "max_effort", "thinking", "adaptive_thinking", "interleaved_thinking"]
+  },
+  {
+    "name": "ANTHROPIC_DEFAULT_HAIKU_MODEL",
+    "group": "API",
+    "type": "string",
+    "label": "Haiku 模型 ID",
+    "desc": "haiku 别名实际使用的模型 ID，后台功能也用它。填完整模型名或提供商对应的 ID。"
+  },
+  {
+    "name": "ANTHROPIC_DEFAULT_HAIKU_MODEL_NAME",
+    "group": "API",
+    "type": "string",
+    "label": "Haiku 显示名称",
+    "desc": "/model 选择器里 Haiku 这一行显示的名称。不设时，能识别的模型 ID 显示模型名，否则显示 ID；在第三方提供商和 LLM 网关上生效，直连 api.anthropic.com 无效。"
+  },
+  {
+    "name": "ANTHROPIC_DEFAULT_HAIKU_MODEL_DESCRIPTION",
+    "group": "API",
+    "type": "string",
+    "label": "Haiku 显示说明",
+    "desc": "/model 选择器里 Haiku 这一行显示的说明，不设时默认说明以 \"Custom Haiku model\" 开头。在第三方提供商和 LLM 网关上生效，直连 api.anthropic.com 无效。"
+  },
+  {
+    "name": "ANTHROPIC_DEFAULT_HAIKU_MODEL_SUPPORTED_CAPABILITIES",
+    "group": "API",
+    "type": "string",
+    "label": "Haiku 支持的能力",
+    "desc": "逗号分隔的能力列表，如 effort,thinking。设置后只启用列出的能力、关闭未列出的；不设则按模型 ID 自动识别。文档说明它在 Amazon Bedrock、Google Cloud Agent Platform、Microsoft Foundry 等第三方提供商上生效。",
+    "suggestions": ["effort", "xhigh_effort", "max_effort", "thinking", "adaptive_thinking", "interleaved_thinking"]
+  },
+  {
+    "name": "ANTHROPIC_DEFAULT_FABLE_MODEL",
+    "group": "API",
+    "type": "string",
+    "label": "Fable 模型 ID",
+    "desc": "fable 别名实际使用的模型 ID；在第三方提供商上，Claude Code 也靠它识别 Fable 模型来做 automatic model fallback。填完整模型名或提供商对应的 ID。"
+  },
+  {
+    "name": "ANTHROPIC_DEFAULT_FABLE_MODEL_NAME",
+    "group": "API",
+    "type": "string",
+    "label": "Fable 显示名称",
+    "desc": "/model 选择器里 Fable 这一行显示的名称。不设时，能识别的模型 ID 显示模型名，否则显示 ID；在第三方提供商和 LLM 网关上生效，直连 api.anthropic.com 无效。"
+  },
+  {
+    "name": "ANTHROPIC_DEFAULT_FABLE_MODEL_DESCRIPTION",
+    "group": "API",
+    "type": "string",
+    "label": "Fable 显示说明",
+    "desc": "/model 选择器里 Fable 这一行显示的说明，不设时默认说明以 \"Custom Fable model\" 开头。在第三方提供商和 LLM 网关上生效，直连 api.anthropic.com 无效。"
+  },
+  {
+    "name": "ANTHROPIC_DEFAULT_FABLE_MODEL_SUPPORTED_CAPABILITIES",
+    "group": "API",
+    "type": "string",
+    "label": "Fable 支持的能力",
+    "desc": "逗号分隔的能力列表，如 effort,thinking。设置后只启用列出的能力、关闭未列出的；不设则按模型 ID 自动识别。文档说明它在 Amazon Bedrock、Google Cloud Agent Platform、Microsoft Foundry 等第三方提供商上生效。",
+    "suggestions": ["effort", "xhigh_effort", "max_effort", "thinking", "adaptive_thinking", "interleaved_thinking"]
+  },
+  {
+    "name": "ANTHROPIC_CUSTOM_MODEL_OPTION",
+    "group": "API",
+    "type": "string",
+    "label": "自定义模型 ID",
+    "desc": "在 /model 选择器末尾追加一个自定义模型条目，不替换内置别名；Claude Code 不校验这个 ID，端点接受的任何字符串都可以。设置了 availableModels 时要把它也加进白名单，否则会被过滤掉。"
+  },
+  {
+    "name": "ANTHROPIC_CUSTOM_MODEL_OPTION_NAME",
+    "group": "API",
+    "type": "string",
+    "label": "自定义模型显示名称",
+    "desc": "/model 选择器里自定义条目显示的名称。不设时，能识别的模型 ID 显示模型名，否则显示 ID。"
+  },
+  {
+    "name": "ANTHROPIC_CUSTOM_MODEL_OPTION_DESCRIPTION",
+    "group": "API",
+    "type": "string",
+    "label": "自定义模型显示说明",
+    "desc": "/model 选择器里自定义条目显示的说明，不设时为 \"Custom model (<model-id>)\"。"
+  },
+  {
+    "name": "ANTHROPIC_CUSTOM_MODEL_OPTION_SUPPORTED_CAPABILITIES",
+    "group": "API",
+    "type": "string",
+    "label": "自定义模型支持的能力",
+    "desc": "逗号分隔的能力列表，如 effort,thinking。设置后只启用列出的能力、关闭未列出的；不设则按模型 ID 自动识别。文档说明它在 Amazon Bedrock、Google Cloud Agent Platform、Microsoft Foundry 等第三方提供商上生效。",
+    "suggestions": ["effort", "xhigh_effort", "max_effort", "thinking", "adaptive_thinking", "interleaved_thinking"]
+  }
+]

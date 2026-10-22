@@ -1,0 +1,2632 @@
+{
+	"topics": [
+		"模型与回复",
+		"权限",
+		"隐私与遥测",
+		"界面与终端",
+		"记忆与上下文",
+		"Git 与署名",
+		"智能体、会话与工作树",
+		"插件与技能",
+		"MCP",
+		"Hooks 与自动化",
+		"沙盒",
+		"认证与服务商",
+		"远程、桌面与通知",
+		"更新与版本",
+		"全局配置"
+	],
+	"fields": [
+		{
+			"key": "advisorModel",
+			"file": "settings",
+			"topic": "模型与回复",
+			"type": "string",
+			"suggestions": [
+				"fable",
+				"opus",
+				"sonnet"
+			],
+			"label": "advisor 模型",
+			"desc": "Claude 调用 advisor 工具时由哪个模型回答，取别名 fable、opus、sonnet 或完整模型 ID；不设则关闭 advisor。advisor 不能弱于主模型，通常用 /advisor 选择；Bedrock 等不支持 advisor 的服务商上无效。",
+			"default": "未设置（advisor 关闭）",
+			"doc": "advisormodel"
+		},
+		{
+			"key": "alwaysThinkingEnabled",
+			"file": "settings",
+			"topic": "模型与回复",
+			"type": "boolean",
+			"label": "扩展思考",
+			"desc": "设为 false 时对所有会话关闭扩展思考；思考默认开启，设为 true 不起作用。对始终思考的模型（如 Opus 5.5、Fable 系列）false 也无效。",
+			"default": "未设置（支持的模型默认思考）",
+			"doc": "alwaysthinkingenabled"
+		},
+		{
+			"key": "availableModels",
+			"file": "settings",
+			"topic": "模型与回复",
+			"type": "stringArray",
+			"label": "可选模型白名单",
+			"desc": "限制主会话、subagent、skill 和 advisor 能选的模型，每行一个别名或模型 ID。模型 ID 默认按前缀匹配，也允许它的后续版本；要让 Default 选项也受限，配合 enforceAvailableModels。",
+			"default": "未设置（所有模型可用）",
+			"doc": "availablemodels"
+		},
+		{
+			"key": "effortLevel",
+			"file": "settings",
+			"topic": "模型与回复",
+			"type": "enum",
+			"options": [
+				{
+					"value": "low",
+					"label": "低"
+				},
+				{
+					"value": "medium",
+					"label": "中"
+				},
+				{
+					"value": "high",
+					"label": "高"
+				},
+				{
+					"value": "xhigh",
+					"label": "超高"
+				}
+			],
+			"label": "默认推理强度",
+			"desc": "为还没单独保存强度的模型设默认推理强度，越高推理越深、越耗 token。v2.1.251 起 /effort 改写到 modelSettings；在用户配置里此键只对 Opus 5、Fable 5.1 及更早模型生效，在项目、本地和托管配置中对所有模型生效。",
+			"default": "未设置",
+			"doc": "effortlevel"
+		},
+		{
+			"key": "enforceAvailableModels",
+			"file": "settings",
+			"topic": "模型与回复",
+			"type": "boolean",
+			"label": "默认模型受白名单限",
+			"desc": "开启后，/model 的 Default 选项若会落到 availableModels 之外的模型，就改用列表里第一个可用模型。availableModels 未设置或为空时无效；需要 v2.1.175 或更高版本。",
+			"default": "false",
+			"doc": "enforceavailablemodels"
+		},
+		{
+			"key": "fallbackModel",
+			"file": "settings",
+			"topic": "模型与回复",
+			"type": "stringArray",
+			"suggestions": [
+				"default",
+				"best",
+				"opus",
+				"sonnet",
+				"haiku",
+				"fable",
+				"opusplan"
+			],
+			"label": "备用模型链",
+			"desc": "主模型过载或不可用时按顺序尝试的备用模型，每行一个别名或 ID，最多取三个。不跨配置文件合并，由优先级最高的文件提供整条链。",
+			"default": "未设置（不换模型重试）",
+			"doc": "fallbackmodel"
+		},
+		{
+			"key": "fastMode",
+			"file": "settings",
+			"topic": "模型与回复",
+			"type": "boolean",
+			"label": "快速模式",
+			"desc": "在可用的会话中开启快速模式，速度更快但每 token 更贵。只支持 Opus 5.5、Opus 5 和 Opus 4.8，通常由 /fast 写入。",
+			"default": "未设置（关闭）",
+			"doc": "fastmode"
+		},
+		{
+			"key": "fastModePerSessionOptIn",
+			"file": "settings",
+			"topic": "模型与回复",
+			"type": "boolean",
+			"label": "快速模式按会话开启",
+			"desc": "设为 true 后，已保存的 fastMode: true 不再在会话开始时自动生效，每个会话需要单独运行 /fast。",
+			"default": "false",
+			"doc": "fastmodepersessionoptin"
+		},
+		{
+			"key": "language",
+			"file": "settings",
+			"topic": "模型与回复",
+			"type": "string",
+			"suggestions": [
+				"chinese",
+				"简体中文",
+				"english",
+				"japanese"
+			],
+			"label": "回复语言",
+			"desc": "让 Claude 默认用指定语言回复，值原样传给 Claude，任何它能读懂的语言名都行，不做校验。同时决定语音听写语言和自动生成的会话标题语言。",
+			"default": "未设置（英语）",
+			"doc": "language"
+		},
+		{
+			"key": "maxEffortLevel",
+			"file": "settings",
+			"topic": "模型与回复",
+			"type": "enum",
+			"options": [
+				{
+					"value": "low",
+					"label": "低"
+				},
+				{
+					"value": "medium",
+					"label": "中"
+				},
+				{
+					"value": "high",
+					"label": "高"
+				},
+				{
+					"value": "xhigh",
+					"label": "超高"
+				},
+				{
+					"value": "max",
+					"label": "不设上限"
+				}
+			],
+			"label": "推理强度上限",
+			"desc": "限制会话能用的最高推理强度，更高的请求按上限执行；max 表示不设上限。多个配置都设置时取最低值；需要 v2.1.267 或更高版本。",
+			"default": "未设置（无上限）",
+			"doc": "maxeffortlevel"
+		},
+		{
+			"key": "model",
+			"file": "settings",
+			"topic": "模型与回复",
+			"type": "string",
+			"suggestions": [
+				"default",
+				"best",
+				"opus",
+				"sonnet",
+				"haiku",
+				"fable",
+				"opusplan"
+			],
+			"label": "默认模型",
+			"desc": "新会话使用的模型，填别名或完整模型 ID，会话中仍可用 /model 切换。--model 和 ANTHROPIC_MODEL 优先于此键。",
+			"default": "未设置（使用账户默认模型）",
+			"doc": "model"
+		},
+		{
+			"key": "modelOverrides",
+			"file": "settings",
+			"topic": "模型与回复",
+			"type": "stringMap",
+			"label": "模型 ID 映射",
+			"desc": "把 Anthropic 模型 ID 映射为服务商的模型 ID（如 Bedrock 推理配置文件 ARN），用于 Bedrock、Google Cloud Agent Platform 和 Microsoft Foundry。",
+			"example": {
+				"claude-opus-4-6": "arn:aws:bedrock:us-east-1:123456789012:inference-profile/example"
+			},
+			"doc": "modeloverrides"
+		},
+		{
+			"key": "modelPicker",
+			"file": "settings",
+			"topic": "模型与回复",
+			"type": "json",
+			"label": "自定义模型选单",
+			"desc": "自定义 /model 选单列出的模型、顺序和显示名：options 是行数组（每行必填 model，可选 label、description），replaceBuiltInOptions 为 true 时替换内置列表。只在用户或托管配置中生效；需要 v2.1.242 或更高版本。",
+			"default": "未设置（显示内置列表）",
+			"example": {
+				"options": [
+					{
+						"model": "opus",
+						"label": "Opus"
+					}
+				]
+			},
+			"doc": "modelpicker"
+		},
+		{
+			"key": "modelSettings",
+			"file": "settings",
+			"topic": "模型与回复",
+			"type": "json",
+			"label": "按模型设置",
+			"desc": "按模型名保存设置，可含 effortLevel、maxEffortLevel 和 autoCompactWindow。同一文件中优先于顶层 effortLevel，/effort 会自动写入；需要 v2.1.251 或更高版本。",
+			"example": {
+				"claude-opus-5-5": {
+					"effortLevel": "high"
+				}
+			},
+			"doc": "modelsettings"
+		},
+		{
+			"key": "outputStyle",
+			"file": "settings",
+			"topic": "模型与回复",
+			"type": "string",
+			"suggestions": [
+				"Explanatory",
+				"Learning"
+			],
+			"label": "输出风格",
+			"desc": "按名称选择输出风格，可以是内置的 Explanatory、Learning，或自己写的风格。会话中修改从下一条消息起生效。",
+			"default": "未设置（默认风格）",
+			"doc": "outputstyle"
+		},
+		{
+			"key": "promptCacheTtl",
+			"file": "settings",
+			"topic": "模型与回复",
+			"type": "enum",
+			"options": [
+				{
+					"value": "5m",
+					"label": "5 分钟"
+				},
+				{
+					"value": "1h",
+					"label": "1 小时"
+				}
+			],
+			"label": "主对话缓存时长",
+			"desc": "主对话提示缓存的保留时长。1 小时在长时间停顿后仍能命中缓存，但缓存写入计费更高；需要 v2.1.242 或更高版本。",
+			"default": "未设置（按请求类型取默认值）",
+			"doc": "promptcachettl"
+		},
+		{
+			"key": "showThinkingSummaries",
+			"file": "settings",
+			"topic": "模型与回复",
+			"type": "boolean",
+			"label": "显示思考摘要",
+			"desc": "开启后在交互会话中按 Ctrl+O 展开可看到完整的思考摘要；关闭时思考内容被隐去，只显示折叠占位。只影响显示，不减少思考开销。",
+			"default": "false",
+			"doc": "showthinkingsummaries"
+		},
+		{
+			"key": "subagentPromptCacheTtl",
+			"file": "settings",
+			"topic": "模型与回复",
+			"type": "enum",
+			"options": [
+				{
+					"value": "5m",
+					"label": "5 分钟"
+				},
+				{
+					"value": "1h",
+					"label": "1 小时"
+				}
+			],
+			"label": "子任务缓存时长",
+			"desc": "主对话以外请求（subagent、workflow、压缩、会话标题等后台请求）的提示缓存保留时长；需要 v2.1.242 或更高版本。",
+			"default": "未设置（按请求类型取默认值）",
+			"doc": "subagentpromptcachettl"
+		},
+		{
+			"key": "switchModelsOnFlag",
+			"file": "settings",
+			"topic": "模型与回复",
+			"type": "boolean",
+			"label": "被拦截时换模型",
+			"desc": "请求被安全分类器标记时：true 自动切换到备用模型继续；false 在交互会话中暂停让你选择换模型或改提示词，-p 等无对话框的场景直接报错。",
+			"default": "未设置（自动切换，交互时可能先询问）",
+			"doc": "switchmodelsonflag"
+		},
+		{
+			"key": "ultracode",
+			"file": "settings",
+			"topic": "模型与回复",
+			"type": "boolean",
+			"label": "ultracode",
+			"desc": "会话以 ultracode 开启状态启动，Claude 会为每个实质性任务主动规划 workflow。只在启用了动态 workflow 且模型支持 xhigh 时有效，不改变推理强度。",
+			"default": "未设置（关闭）",
+			"doc": "ultracode"
+		},
+		{
+			"key": "autoMode",
+			"file": "settings",
+			"topic": "权限",
+			"type": "json",
+			"label": "auto 模式规则",
+			"desc": "向 auto 模式分类器添加自定义规则，含 environment、allow、soft_deny、hard_deny 四个文字规则数组；数组里写 \"$defaults\" 保留内置规则，不写则替换内置规则。只在用户或托管配置中生效。",
+			"default": "未设置（只用内置规则）",
+			"example": {
+				"soft_deny": [
+					"$defaults",
+					"Never run terraform apply"
+				]
+			},
+			"doc": "automode"
+		},
+		{
+			"key": "autoMode.classifyAllShell",
+			"file": "settings",
+			"topic": "权限",
+			"type": "boolean",
+			"label": "全部命令过分类器",
+			"desc": "auto 模式下让每条 Bash 和 PowerShell 命令都经过分类器，暂停所有 shell 允许规则；默认只暂停 Bash(*) 这类可执行任意代码的规则。只在用户或托管配置中生效；需要 v2.1.193 或更高版本。",
+			"default": "false",
+			"doc": "automode-classifyallshell"
+		},
+		{
+			"key": "disableAutoMode",
+			"file": "settings",
+			"topic": "权限",
+			"type": "enum",
+			"options": [
+				{
+					"value": "disable",
+					"label": "禁用 auto 模式"
+				}
+			],
+			"label": "禁用 auto 模式",
+			"desc": "从 Shift+Tab 切换中移除 auto 模式，原本以 auto 模式启动的会话改为 default 模式。唯一有效值是 \"disable\"，多用于托管配置。",
+			"default": "未设置",
+			"doc": "disableautomode"
+		},
+		{
+			"key": "permissions",
+			"file": "settings",
+			"topic": "权限",
+			"type": "object",
+			"label": "权限",
+			"desc": "权限配置的父对象，包含 allow、ask、deny 规则、额外目录和默认权限模式等子键。",
+			"doc": "permissions"
+		},
+		{
+			"key": "permissions.additionalDirectories",
+			"file": "settings",
+			"topic": "权限",
+			"type": "stringArray",
+			"label": "额外工作目录",
+			"desc": "让 Claude 可以访问启动目录以外的目录，每行一个路径。这些目录里的大部分 .claude/ 配置不会被读取；写在项目配置中需先接受工作区信任对话框。",
+			"default": "未设置",
+			"doc": "permissions-additionaldirectories"
+		},
+		{
+			"key": "permissions.allow",
+			"file": "settings",
+			"topic": "权限",
+			"type": "stringArray",
+			"label": "允许规则",
+			"desc": "无需询问直接放行的工具调用，每行一条规则，格式为 Tool 或 Tool(specifier)，如 Bash(npm run *)。项目配置中的允许规则需先接受工作区信任对话框才生效。",
+			"default": "未设置",
+			"doc": "permissions-allow"
+		},
+		{
+			"key": "permissions.ask",
+			"file": "settings",
+			"topic": "权限",
+			"type": "stringArray",
+			"label": "询问规则",
+			"desc": "即使在 acceptEdits、bypassPermissions 等模式下也要先询问的工具调用，每行一条规则。dontAsk 模式下匹配的调用直接拒绝。",
+			"default": "未设置",
+			"doc": "permissions-ask"
+		},
+		{
+			"key": "permissions.blockReadsOutsideWorkingDirectories",
+			"file": "settings",
+			"topic": "权限",
+			"type": "boolean",
+			"label": "禁读工作目录外文件",
+			"desc": "在所有权限模式下（包括 bypassPermissions）禁止文件工具读取工作目录以外的路径。只有 true 生效，任一配置文件设为 true 即启用；需要 v2.1.257 或更高版本。",
+			"default": "未设置（按权限模式处理）",
+			"doc": "permissions-blockreadsoutsideworkingdirectories"
+		},
+		{
+			"key": "permissions.defaultMode",
+			"file": "settings",
+			"topic": "权限",
+			"type": "enum",
+			"options": [
+				{
+					"value": "default",
+					"label": "默认（只读操作免询问）"
+				},
+				{
+					"value": "acceptEdits",
+					"label": "自动接受编辑"
+				},
+				{
+					"value": "plan",
+					"label": "计划模式"
+				},
+				{
+					"value": "auto",
+					"label": "自动（分类器审查）"
+				},
+				{
+					"value": "dontAsk",
+					"label": "不询问（自动拒绝）"
+				},
+				{
+					"value": "bypassPermissions",
+					"label": "跳过所有权限检查"
+				},
+				{
+					"value": "manual",
+					"label": "manual（同 default）"
+				}
+			],
+			"label": "默认权限模式",
+			"desc": "新会话开始时使用的权限模式。auto 和 bypassPermissions 在项目或本地配置中不生效，要写在 ~/.claude/settings.json；--permission-mode 优先于此键。",
+			"default": "未设置（使用内置默认）",
+			"doc": "permissions-defaultmode"
+		},
+		{
+			"key": "permissions.deny",
+			"file": "settings",
+			"topic": "权限",
+			"type": "stringArray",
+			"label": "拒绝规则",
+			"desc": "禁止的工具调用，每行一条规则，适合屏蔽存放密钥的文件，如 Read(./.env)。deny 规则在任何模式下都生效，但 Bash 规则只匹配字面命令，需要系统级隔离请用沙盒。",
+			"default": "未设置",
+			"doc": "permissions-deny"
+		},
+		{
+			"key": "permissions.disableBypassPermissionsMode",
+			"file": "settings",
+			"topic": "权限",
+			"type": "enum",
+			"options": [
+				{
+					"value": "disable",
+					"label": "禁用 bypass 模式"
+				}
+			],
+			"label": "禁用 bypass 模式",
+			"desc": "禁止进入 bypassPermissions 模式，拒绝 --dangerously-skip-permissions，并忽略 subagent 定义里的 permissionMode: bypassPermissions。唯一有效值是 \"disable\"，通常在托管配置中设置。",
+			"default": "未设置",
+			"doc": "permissions-disablebypasspermissionsmode"
+		},
+		{
+			"key": "skipAutoPermissionPrompt",
+			"file": "settings",
+			"topic": "权限",
+			"type": "boolean",
+			"label": "跳过 auto 模式提示",
+			"desc": "跳过首次进入 auto 模式时显示的一次性说明。只有 true 生效，只在用户或托管配置中生效。",
+			"default": "未设置（显示一次）",
+			"doc": "skipautopermissionprompt"
+		},
+		{
+			"key": "skipDangerousModePermissionPrompt",
+			"file": "settings",
+			"topic": "权限",
+			"type": "boolean",
+			"label": "跳过 bypass 确认",
+			"desc": "跳过进入 bypassPermissions 模式前的确认对话框，接受过一次后 Claude Code 会自动写入 true。只有 true 生效，只在用户、本地或托管配置中生效。",
+			"default": "未设置（显示确认）",
+			"doc": "skipdangerousmodepermissionprompt"
+		},
+		{
+			"key": "useAutoModeDuringPlan",
+			"file": "settings",
+			"topic": "权限",
+			"type": "boolean",
+			"label": "计划模式用分类器",
+			"desc": "计划模式下由 auto 模式分类器审查 shell 命令，不再逐条询问；设为 false 则内置只读命令以外的每条命令都要确认。只在用户、本地或托管配置中生效。",
+			"default": "true",
+			"doc": "useautomodeduringplan"
+		},
+		{
+			"key": "cleanupPeriodDays",
+			"file": "settings",
+			"topic": "隐私与遥测",
+			"type": "integer",
+			"min": 1,
+			"label": "记录保留天数",
+			"desc": "会话记录等数据保留多少天后在后台静默删除，过期会话不再出现在 /resume 里。最小为 1，设 0 会校验失败；想长期保留可设 3650 之类的大值。",
+			"default": "30",
+			"doc": "cleanupperioddays"
+		},
+		{
+			"key": "desktopSessionCleanupPeriodDays",
+			"file": "settings",
+			"topic": "隐私与遥测",
+			"type": "integer",
+			"min": 0,
+			"label": "桌面会话保留天数",
+			"desc": "Claude Desktop 或 Cowork 会话记录的保留天数，记录要同时超过此值和 cleanupPeriodDays 才删除；0 表示不限。只在用户或托管配置（及 --settings）中生效。需要 v2.1.248 或更高版本。",
+			"default": "0（不限）",
+			"doc": "desktopsessioncleanupperioddays"
+		},
+		{
+			"key": "feedbackDrafts",
+			"file": "settings",
+			"topic": "隐私与遥测",
+			"type": "enum",
+			"options": [
+				{
+					"value": "notify",
+					"label": "起草并弹卡片提示"
+				},
+				{
+					"value": "quiet",
+					"label": "起草但不提示"
+				},
+				{
+					"value": "off",
+					"label": "关闭"
+				}
+			],
+			"label": "起草反馈",
+			"desc": "控制 Claude 是否可以为你排队反馈草稿，以及排队时是否在提示框上方显示卡片。off 会移除 SendFeedback 工具。只在用户或托管配置中生效。",
+			"default": "notify",
+			"doc": "feedbackdrafts"
+		},
+		{
+			"key": "feedbackSurveyRate",
+			"file": "settings",
+			"topic": "隐私与遥测",
+			"type": "number",
+			"min": 0,
+			"max": 1,
+			"label": "满意度调查概率",
+			"desc": "符合条件时弹出会话质量调查的概率，0 到 1 之间；设 0 不弹出。VS Code 扩展使用同一概率。",
+			"default": "未设置，使用 Anthropic 远程下发的概率",
+			"doc": "feedbacksurveyrate"
+		},
+		{
+			"key": "skipWebFetchPreflight",
+			"file": "settings",
+			"topic": "隐私与遥测",
+			"type": "boolean",
+			"label": "跳过域名安全检查",
+			"desc": "设为 true 跳过 WebFetch 抓取前把主机名发到 api.anthropic.com 的安全检查，适合屏蔽 Anthropic 流量的环境。跳过后建议用 WebFetch 权限规则限制域名。",
+			"default": "未设置（检查）",
+			"doc": "skipwebfetchpreflight"
+		},
+		{
+			"key": "askUserQuestionTimeout",
+			"file": "settings",
+			"topic": "界面与终端",
+			"type": "enum",
+			"options": [
+				{
+					"value": "60s",
+					"label": "60 秒"
+				},
+				{
+					"value": "5m",
+					"label": "5 分钟"
+				},
+				{
+					"value": "10m",
+					"label": "10 分钟"
+				},
+				{
+					"value": "never",
+					"label": "永不"
+				}
+			],
+			"label": "提问自动继续",
+			"desc": "AskUserQuestion 提问无人回答时，空闲多久后自动提交已选项并继续。只在用户或托管配置中生效。",
+			"default": "never",
+			"doc": "askuserquestiontimeout"
+		},
+		{
+			"key": "autoContinueAtUsageLimit",
+			"file": "settings",
+			"topic": "界面与终端",
+			"type": "boolean",
+			"label": "额度恢复后自动继续",
+			"desc": "claude.ai 用量达到上限后，在当前会话中等待额度重置并自动继续任务。只从用户、--settings 和托管配置读取；项目或本地配置设置它会关闭此功能。需要 v2.1.234 或更高版本。",
+			"default": "true",
+			"doc": "autocontinueatusagelimit"
+		},
+		{
+			"key": "autoScrollEnabled",
+			"file": "settings",
+			"topic": "界面与终端",
+			"type": "boolean",
+			"label": "自动滚动",
+			"desc": "全屏渲染下自动跟随新输出滚到底部；关闭后停留在你滚到的位置，权限提示仍会出现。",
+			"default": "true",
+			"doc": "autoscrollenabled"
+		},
+		{
+			"key": "axScreenReader",
+			"file": "settings",
+			"topic": "界面与终端",
+			"type": "boolean",
+			"label": "读屏模式",
+			"desc": "输出适合读屏软件的纯文本，不带装饰边框和动画，并使用经典渲染器（此时 tui 设置无效）。",
+			"default": "未设置（关闭）",
+			"doc": "axscreenreader"
+		},
+		{
+			"key": "bashEditDiffEnabled",
+			"file": "settings",
+			"topic": "界面与终端",
+			"type": "boolean",
+			"label": "记录 Bash 改动",
+			"desc": "在所有权限模式下记录 Bash 命令运行期间 Git 仓库里改动的文件，命令后显示 diff 并传给 PostToolUse Bash Hooks。true 只在用户、--settings 或托管配置中生效；需要 v2.1.269 或更高版本。",
+			"default": "未设置（仅 auto 和 bypassPermissions 模式下记录）",
+			"doc": "basheditdiffenabled"
+		},
+		{
+			"key": "companyAnnouncements",
+			"file": "settings",
+			"topic": "界面与终端",
+			"type": "stringArray",
+			"label": "公司公告",
+			"desc": "启动时显示的组织公告，每行一条；多条时每个会话随机选一条，用户首次启动时显示第一条。",
+			"default": "未设置",
+			"doc": "companyannouncements"
+		},
+		{
+			"key": "defaultShell",
+			"file": "settings",
+			"topic": "界面与终端",
+			"type": "enum",
+			"options": [
+				{
+					"value": "bash",
+					"label": "Bash"
+				},
+				{
+					"value": "powershell",
+					"label": "PowerShell"
+				}
+			],
+			"label": "! 命令用的 shell",
+			"desc": "输入框里用 ! 前缀运行的命令交给 Bash 还是 PowerShell。powershell 需要 PowerShell 工具开启，指定的 shell 不可用时自动换另一个。",
+			"default": "bash（Windows 无 Bash 时为 powershell）",
+			"doc": "defaultshell"
+		},
+		{
+			"key": "dialogExpiry",
+			"file": "settings",
+			"topic": "界面与终端",
+			"type": "enum",
+			"options": [
+				{
+					"value": "60s",
+					"label": "60 秒"
+				},
+				{
+					"value": "5m",
+					"label": "5 分钟"
+				},
+				{
+					"value": "10m",
+					"label": "10 分钟"
+				},
+				{
+					"value": "never",
+					"label": "永不"
+				}
+			],
+			"label": "转发对话框超时",
+			"desc": "转发给 Remote Control 或 SDK 宿主的对话框等待多久无回应就取消，never 表示不设期限。不影响权限提示和 AskUserQuestion；只在用户或托管配置中生效，需要 v2.1.224 或更高版本。",
+			"default": "5m",
+			"doc": "dialogexpiry"
+		},
+		{
+			"key": "editorMode",
+			"file": "settings",
+			"topic": "界面与终端",
+			"type": "enum",
+			"options": [
+				{
+					"value": "normal",
+					"label": "普通"
+				},
+				{
+					"value": "vim",
+					"label": "Vim"
+				}
+			],
+			"label": "输入框按键模式",
+			"desc": "输入框的按键模式：普通按键，或带 NORMAL、INSERT、VISUAL 模式的 vim 风格编辑。",
+			"default": "normal",
+			"doc": "editormode"
+		},
+		{
+			"key": "emojiCompletionEnabled",
+			"file": "settings",
+			"topic": "界面与终端",
+			"type": "boolean",
+			"label": "emoji 补全",
+			"desc": "在输入框输入 : 加短代码时提示 emoji，并把完整的短代码（如 :heart:）替换成 emoji。需要 v2.1.217 或更高版本。",
+			"default": "true",
+			"doc": "emojicompletionenabled"
+		},
+		{
+			"key": "fileSuggestion",
+			"file": "settings",
+			"topic": "界面与终端",
+			"type": "json",
+			"label": "自定义 @ 文件补全",
+			"desc": "用自己的命令代替内置的 @ 文件路径补全：type 固定为 \"command\"，command 是要运行的命令。命令从 stdin 收到含 query 的 JSON，向 stdout 输出每行一个路径，超过 5 秒不等待。",
+			"default": "未设置（使用内置补全）",
+			"example": {
+				"type": "command",
+				"command": "~/.claude/file-suggestion.sh"
+			},
+			"doc": "filesuggestion"
+		},
+		{
+			"key": "footerLinksRegexes",
+			"file": "settings",
+			"topic": "界面与终端",
+			"type": "json",
+			"label": "页脚链接规则",
+			"desc": "正则匹配到工具结果或回复中的内容时，在输入框下方显示可点击徽章。每项含 type: \"regex\"、pattern、url 模板和可选 label，url 里的 {name} 由命名捕获组填充；只在用户或托管配置中生效。",
+			"default": "未设置",
+			"example": [
+				{
+					"type": "regex",
+					"pattern": "\\b(?<key>PROJ-\\d+)\\b",
+					"url": "https://issues.example.com/browse/{key}",
+					"label": "{key}"
+				}
+			],
+			"doc": "footerlinksregexes"
+		},
+		{
+			"key": "keybindingFlavor",
+			"file": "settings",
+			"topic": "界面与终端",
+			"type": "enum",
+			"options": [
+				{
+					"value": "classic",
+					"label": "经典"
+				},
+				{
+					"value": "readline",
+					"label": "readline"
+				}
+			],
+			"label": "按键风格（已弃用）",
+			"desc": "v2.1.261 起已弃用且无效，输入框的删词键始终遵循 readline 习惯。v2.1.238 到 v2.1.260 中设为 readline 会让 Ctrl+W 删除到上一个空白处。",
+			"default": "未设置",
+			"doc": "keybindingflavor"
+		},
+		{
+			"key": "maxProseWidth",
+			"file": "settings",
+			"topic": "界面与终端",
+			"type": "integer",
+			"min": 40,
+			"label": "正文最大宽度",
+			"desc": "限制回复正文的列宽，便于在宽终端阅读；表格和代码块仍用整个终端宽度。最小 40，其他值被忽略；需要 v2.1.282 或更高版本。",
+			"default": "未设置（折行到终端边缘）",
+			"doc": "maxprosewidth"
+		},
+		{
+			"key": "prefersReducedMotion",
+			"file": "settings",
+			"topic": "界面与终端",
+			"type": "boolean",
+			"label": "减少动画",
+			"desc": "减少或关闭界面动画，如加载指示、闪光和闪烁效果。",
+			"default": "false",
+			"doc": "prefersreducedmotion"
+		},
+		{
+			"key": "promptSuggestionEnabled",
+			"file": "settings",
+			"topic": "界面与终端",
+			"type": "boolean",
+			"label": "提示词建议",
+			"desc": "在输入框显示灰色的提示词预测。需要 claude.ai 或 Console 账户且开启遥测；第三方服务商或关闭遥测时此键无效。",
+			"default": "true",
+			"doc": "promptsuggestionenabled"
+		},
+		{
+			"key": "respectGitignore",
+			"file": "settings",
+			"topic": "界面与终端",
+			"type": "boolean",
+			"label": "@ 排除忽略文件",
+			"desc": "@ 文件选择器是否排除匹配 .gitignore 的文件。设置文件都没设时回退到 ~/.claude.json 里的同名值。",
+			"default": "true",
+			"doc": "respectgitignore"
+		},
+		{
+			"key": "respondToBashCommands",
+			"file": "settings",
+			"topic": "界面与终端",
+			"type": "boolean",
+			"label": "回应 ! 命令",
+			"desc": "用 ! 前缀运行 shell 命令后 Claude 是否回复。设为 false 只把输出加入上下文，方便连续跑几条命令再一起提问。",
+			"default": "true",
+			"doc": "respondtobashcommands"
+		},
+		{
+			"key": "showClearContextOnPlanAccept",
+			"file": "settings",
+			"topic": "界面与终端",
+			"type": "boolean",
+			"label": "批准计划时清上下文",
+			"desc": "在计划模式的批准菜单中增加首个选项：批准计划、清空对话上下文，只凭计划开始实施。",
+			"default": "false",
+			"doc": "showclearcontextonplanaccept"
+		},
+		{
+			"key": "showTurnDuration",
+			"file": "settings",
+			"topic": "界面与终端",
+			"type": "boolean",
+			"label": "显示轮次耗时",
+			"desc": "每次回复后显示本轮耗时和完成时间，如 \"Cooked for 1m 6s · done 6:05 PM\"。",
+			"default": "true",
+			"doc": "showturnduration"
+		},
+		{
+			"key": "spellcheck",
+			"file": "settings",
+			"topic": "界面与终端",
+			"type": "json",
+			"label": "拼写检查",
+			"desc": "在输入框中给拼错的词加下划线，需要自行安装 aspell、hunspell 或 ispell。可设 enabled、checker、language（词典名）和 color；只在用户或托管配置中生效，需要 v2.1.235 或更高版本。",
+			"default": "未设置（关闭）",
+			"example": {
+				"enabled": true,
+				"language": "en_GB"
+			},
+			"doc": "spellcheck"
+		},
+		{
+			"key": "spinnerTipsEnabled",
+			"file": "settings",
+			"topic": "界面与终端",
+			"type": "boolean",
+			"label": "加载时显示提示",
+			"desc": "Claude 工作时在加载行轮播 Claude Code 功能小提示；设为 false 隐藏，自定义提示也一并隐藏。",
+			"default": "true",
+			"doc": "spinnertipsenabled"
+		},
+		{
+			"key": "spinnerTipsOverride",
+			"file": "settings",
+			"topic": "界面与终端",
+			"type": "json",
+			"label": "自定义加载提示",
+			"desc": "添加自己的加载提示或替换内置提示：tips 是字符串或带 id、text 的对象数组，另有 tipsFile、label（前缀）和 excludeDefault（隐藏内置提示）。项目和本地配置中只读取纯字符串提示。",
+			"default": "未设置（只显示内置提示）",
+			"example": {
+				"tips": [
+					"Run /review before opening a PR"
+				]
+			},
+			"doc": "spinnertipsoverride"
+		},
+		{
+			"key": "spinnerVerbs",
+			"file": "settings",
+			"topic": "界面与终端",
+			"type": "json",
+			"label": "加载动词",
+			"desc": "自定义加载时轮播的动词：verbs 是字符串数组，mode 为 append（追加到内置列表）或 replace（只用你的）。",
+			"default": "未设置（使用内置动词）",
+			"example": {
+				"mode": "append",
+				"verbs": [
+					"Pondering",
+					"Crafting"
+				]
+			},
+			"doc": "spinnerverbs"
+		},
+		{
+			"key": "statusLine",
+			"file": "settings",
+			"topic": "界面与终端",
+			"type": "json",
+			"label": "状态栏",
+			"desc": "运行自定义命令，在输入框下方显示状态栏（模型、费用、git 分支等）。type 固定为 \"command\"，可选 padding、refreshInterval（秒，最小 1）和 hideVimModeIndicator；allowManagedHooksOnly 开启或设置了 disableAllHooks 时只运行托管配置的值。",
+			"default": "未设置（无状态栏）",
+			"example": {
+				"type": "command",
+				"command": "~/.claude/statusline.sh",
+				"padding": 2
+			},
+			"doc": "statusline"
+		},
+		{
+			"key": "subagentStatusLine",
+			"file": "settings",
+			"topic": "界面与终端",
+			"type": "json",
+			"label": "subagent 状态",
+			"desc": "运行自定义命令改写 subagent 任务列表的每一行：命令从 stdin 收到含 tasks 数组的 JSON，按 {\"id\", \"content\"} 逐行写回要替换的行。type 固定为 \"command\"。",
+			"default": "未设置（默认样式）",
+			"example": {
+				"type": "command",
+				"command": "~/.claude/subagent-statusline.sh"
+			},
+			"doc": "subagentstatusline"
+		},
+		{
+			"key": "syntaxHighlightingDisabled",
+			"file": "settings",
+			"topic": "界面与终端",
+			"type": "boolean",
+			"label": "关闭语法高亮",
+			"desc": "设为 true 时 diff、代码块和文件预览以纯文本显示，适合颜色与终端主题冲突或读屏较慢的情况。",
+			"default": "false",
+			"doc": "syntaxhighlightingdisabled"
+		},
+		{
+			"key": "terminalProgressBarEnabled",
+			"file": "settings",
+			"topic": "界面与终端",
+			"type": "boolean",
+			"label": "终端进度条",
+			"desc": "Claude 工作时在终端标签页或任务栏显示进度指示，只在 ConEmu、Ghostty 1.2.0+、iTerm2 3.6.6+ 中有效。",
+			"default": "true",
+			"doc": "terminalprogressbarenabled"
+		},
+		{
+			"key": "terminalTitleFromRename",
+			"file": "settings",
+			"topic": "界面与终端",
+			"type": "boolean",
+			"label": "标签页用会话名",
+			"desc": "用 /rename 或 --name 命名会话后，终端标签页标题显示该名称；设为 false 保留根据对话自动生成的标题。",
+			"default": "true",
+			"doc": "terminaltitlefromrename"
+		},
+		{
+			"key": "theme",
+			"file": "settings",
+			"topic": "界面与终端",
+			"type": "string",
+			"suggestions": [
+				"auto",
+				"dark",
+				"light",
+				"dark-daltonized",
+				"light-daltonized",
+				"dark-ansi",
+				"light-ansi"
+			],
+			"label": "颜色主题",
+			"desc": "界面配色：auto 跟随终端背景，daltonized 为色盲友好配色，ansi 只用终端 ANSI 调色板。也可填 custom:<slug> 使用 ~/.claude/themes/ 或插件里的自定义主题。",
+			"default": "dark",
+			"doc": "theme"
+		},
+		{
+			"key": "timeFormat",
+			"file": "settings",
+			"topic": "界面与终端",
+			"type": "string",
+			"suggestions": [
+				"auto",
+				"12-hour",
+				"24-hour",
+				"24-hour-utc",
+				"%H:%M"
+			],
+			"label": "时间格式",
+			"desc": "界面中时间的显示格式：auto、12-hour、24-hour、24-hour-utc（UTC，忽略 timeZone），或含 % 的 strftime 格式如 %H:%M。需要 v2.1.257 或更高版本。",
+			"default": "auto",
+			"doc": "timeformat"
+		},
+		{
+			"key": "timeZone",
+			"file": "settings",
+			"topic": "界面与终端",
+			"type": "string",
+			"suggestions": [
+				"UTC",
+				"Asia/Shanghai"
+			],
+			"label": "时区",
+			"desc": "界面时间使用的 IANA 时区名，如 UTC、Asia/Shanghai；无法识别时用系统时区。需要 v2.1.257 或更高版本。",
+			"default": "未设置（系统时区）",
+			"doc": "timezone"
+		},
+		{
+			"key": "tui",
+			"file": "settings",
+			"topic": "界面与终端",
+			"type": "enum",
+			"options": [
+				{
+					"value": "default",
+					"label": "经典渲染"
+				},
+				{
+					"value": "fullscreen",
+					"label": "全屏渲染"
+				}
+			],
+			"label": "终端渲染器",
+			"desc": "选择终端界面渲染器：经典主屏渲染，或无闪烁的全屏（alt-screen）渲染。/tui 命令会写入此键，CLAUDE_CODE_NO_FLICKER 等环境变量优先。",
+			"default": "未设置（自动选择）",
+			"doc": "tui"
+		},
+		{
+			"key": "verbose",
+			"file": "settings",
+			"topic": "界面与终端",
+			"type": "boolean",
+			"label": "详细输出",
+			"desc": "在对话中直接显示每次工具调用的完整输入和输出，而不是折叠摘要，便于调试 Hooks、MCP 等。设置了 viewMode 或 /focus 时被覆盖。",
+			"default": "false",
+			"doc": "verbose"
+		},
+		{
+			"key": "viewMode",
+			"file": "settings",
+			"topic": "界面与终端",
+			"type": "enum",
+			"options": [
+				{
+					"value": "default",
+					"label": "默认"
+				},
+				{
+					"value": "verbose",
+					"label": "详细"
+				},
+				{
+					"value": "focus",
+					"label": "专注"
+				}
+			],
+			"label": "启动视图",
+			"desc": "会话启动时的对话视图，设置后覆盖 verbose 和 /focus 的选择。focus 只显示最后的提示、工具调用摘要和最终回复，需要全屏渲染器。",
+			"default": "未设置（按 verbose 和上次 /focus 选择）",
+			"doc": "viewmode"
+		},
+		{
+			"key": "vimInsertModeRemaps",
+			"file": "settings",
+			"topic": "界面与终端",
+			"type": "stringMap",
+			"label": "Vim 插入模式映射",
+			"desc": "在 vim 模式的 INSERT 下把两个字符的按键序列映射为 Esc，值只能是 \"<Esc>\"。只在 editorMode 为 vim 时有效，只在用户或托管配置中生效。",
+			"default": "未设置",
+			"example": {
+				"jj": "<Esc>"
+			},
+			"doc": "viminsertmoderemaps"
+		},
+		{
+			"key": "voice",
+			"file": "settings",
+			"topic": "界面与终端",
+			"type": "json",
+			"label": "语音听写",
+			"desc": "开启语音听写并设置按键方式：enabled 开关，mode 为 hold（按住说话）或 tap（点一下开始、再点发送），autoSubmit 仅在 hold 模式下松键即发送。需要 claude.ai 账户，/voice 会写入此键。",
+			"default": "未设置（关闭）",
+			"example": {
+				"enabled": true,
+				"mode": "tap"
+			},
+			"doc": "voice"
+		},
+		{
+			"key": "voiceEnabled",
+			"file": "settings",
+			"topic": "界面与终端",
+			"type": "boolean",
+			"label": "语音听写（已弃用）",
+			"desc": "v2.1.92 起已被 voice 对象取代，仍会读取以兼容旧配置；两者都设置时以 voice.enabled 为准。",
+			"default": "未设置",
+			"doc": "voiceenabled"
+		},
+		{
+			"key": "wheelScrollAccelerationEnabled",
+			"file": "settings",
+			"topic": "界面与终端",
+			"type": "boolean",
+			"label": "滚轮加速",
+			"desc": "全屏渲染下快速滚动鼠标滚轮时加速；设为 false 每格滚动距离固定。",
+			"default": "true",
+			"doc": "wheelscrollaccelerationenabled"
+		},
+		{
+			"key": "autoCompactEnabled",
+			"file": "settings",
+			"topic": "记忆与上下文",
+			"type": "boolean",
+			"label": "自动压缩",
+			"desc": "上下文接近上限时自动压缩对话。关闭后手动 /compact 仍可用，空闲压缩也会一起关闭。环境变量 DISABLE_AUTO_COMPACT 关闭后这里无法再打开。",
+			"default": "true",
+			"doc": "autocompactenabled"
+		},
+		{
+			"key": "autoCompactWindow",
+			"file": "settings",
+			"topic": "记忆与上下文",
+			"type": "integer",
+			"min": 100000,
+			"max": 1000000,
+			"label": "自动压缩窗口",
+			"desc": "上下文达到多少 token 时触发自动压缩，范围 100000 到 1000000，超过模型上下文窗口时按窗口上限算。/autocompact 按模型保存在 modelSettings 里的值优先。",
+			"default": "未设置，按模型自动选择",
+			"doc": "autocompactwindow"
+		},
+		{
+			"key": "autoMemoryDirectory",
+			"file": "settings",
+			"topic": "记忆与上下文",
+			"type": "string",
+			"label": "自动记忆目录",
+			"desc": "把自动记忆存到指定目录，路径须为绝对路径或以 ~/ 开头。来自项目或本地配置时需先信任工作区。",
+			"default": "~/.claude/projects/<project>/memory/",
+			"doc": "automemorydirectory"
+		},
+		{
+			"key": "autoMemoryEnabled",
+			"file": "settings",
+			"topic": "记忆与上下文",
+			"type": "boolean",
+			"label": "自动记忆",
+			"desc": "开关自动记忆。设为 false 时 Claude 不读写自动记忆目录。会话中可用 /memory 切换；环境变量 CLAUDE_CODE_DISABLE_AUTO_MEMORY 优先。",
+			"default": "true",
+			"doc": "automemoryenabled"
+		},
+		{
+			"key": "bashOutputMaxChars",
+			"file": "settings",
+			"topic": "记忆与上下文",
+			"type": "integer",
+			"min": 4000,
+			"max": 128000,
+			"label": "命令输出上限",
+			"desc": "成功的 Bash/PowerShell 命令输出最多直接给 Claude 多少字符，超出部分存到文件、只给预览和路径。取值会被限制在 4000 到 128000；设置后忽略 BASH_MAX_OUTPUT_LENGTH。需要 v2.1.261 或更高版本。",
+			"default": "30000",
+			"doc": "bashoutputmaxchars"
+		},
+		{
+			"key": "claudeMdExcludes",
+			"file": "settings",
+			"topic": "记忆与上下文",
+			"type": "stringArray",
+			"label": "排除记忆文件",
+			"desc": "加载记忆时跳过的 CLAUDE.md 文件，每项是 glob 模式或绝对路径，按绝对路径匹配。只对用户、项目和本地记忆文件生效，托管的 CLAUDE.md 不能排除。",
+			"default": "未设置，加载全部",
+			"doc": "claudemdexcludes"
+		},
+		{
+			"key": "env",
+			"file": "settings",
+			"topic": "记忆与上下文",
+			"type": "stringMap",
+			"label": "环境变量",
+			"desc": "为每个会话及其启动的子进程设置环境变量，值必须是字符串，会覆盖 shell 里的同名变量。项目和本地配置不能设置部分变量（如 CLAUDE_CONFIG_DIR、开启遥测的 OTEL 变量）；值以明文保存。",
+			"default": "未设置",
+			"example": {
+				"DISABLE_AUTO_COMPACT": "1",
+				"ANTHROPIC_BASE_URL": "https://proxy.example.com"
+			},
+			"doc": "env"
+		},
+		{
+			"key": "fileCheckpointingEnabled",
+			"file": "settings",
+			"topic": "记忆与上下文",
+			"type": "boolean",
+			"label": "文件检查点",
+			"desc": "每次编辑前给文件拍快照，供 /rewind 恢复。-p 和 Agent SDK 会话忽略此键。",
+			"default": "true",
+			"doc": "filecheckpointingenabled"
+		},
+		{
+			"key": "idleCompaction",
+			"file": "settings",
+			"topic": "记忆与上下文",
+			"type": "boolean",
+			"label": "空闲压缩",
+			"desc": "离开较久（约 54 分钟）、提示缓存即将过期时，自动压缩已超过阈值的长对话。需要 v2.1.290 或更高版本；关闭 autoCompactEnabled 也会关闭它。",
+			"default": "true",
+			"doc": "idlecompaction"
+		},
+		{
+			"key": "plansDirectory",
+			"file": "settings",
+			"topic": "记忆与上下文",
+			"type": "string",
+			"label": "计划文件目录",
+			"desc": "plan 模式写的计划文件存放位置，相对项目根目录。路径落在项目根之外或含反斜杠时仍使用 ~/.claude/plans。",
+			"default": "~/.claude/plans",
+			"doc": "plansdirectory"
+		},
+		{
+			"key": "skillListingBudgetFraction",
+			"file": "settings",
+			"topic": "记忆与上下文",
+			"type": "number",
+			"max": 1,
+			"label": "技能列表占比",
+			"desc": "每轮给 Claude 的 skill 列表最多占上下文窗口的比例，须大于 0 且不超过 1。超出时保留名称、去掉最少用 skill 的描述。",
+			"default": "0.01",
+			"doc": "skilllistingbudgetfraction"
+		},
+		{
+			"key": "skillListingMaxDescChars",
+			"file": "settings",
+			"topic": "记忆与上下文",
+			"type": "integer",
+			"min": 1,
+			"label": "技能描述字数",
+			"desc": "skill 列表里每个 skill 的 description 和 when_to_use 最多显示多少字符，超出截断。",
+			"default": "1536",
+			"doc": "skilllistingmaxdescchars"
+		},
+		{
+			"key": "taskOutputMaxChars",
+			"file": "settings",
+			"topic": "记忆与上下文",
+			"type": "integer",
+			"min": 1,
+			"label": "任务输出上限（旧）",
+			"desc": "已在 v2.1.277 随 TaskOutput 工具一起移除，当前版本设置无效。旧版本中用于限制读取后台任务输出时内联给 Claude 的字符数。",
+			"doc": "taskoutputmaxchars"
+		},
+		{
+			"key": "attribution",
+			"file": "settings",
+			"topic": "Git 与署名",
+			"type": "object",
+			"label": "提交与 PR 署名",
+			"desc": "自定义 Claude Code 在 git 提交和 PR 描述里加的署名，子键分别设置。整个键设为 false 可隐藏全部署名（需要 v2.1.281 或更高版本，旧版本会因此跳过整个配置文件）。",
+			"default": "未设置，使用各子键的默认署名",
+			"doc": "attribution"
+		},
+		{
+			"key": "attribution.commit",
+			"file": "settings",
+			"topic": "Git 与署名",
+			"type": "string",
+			"label": "提交署名",
+			"desc": "添加到 git 提交里的署名文字，可包含 trailer。设为空字符串则不加提交署名。",
+			"default": "Co-Authored-By: <模型名> <noreply@anthropic.com>",
+			"doc": "attribution-commit"
+		},
+		{
+			"key": "attribution.pr",
+			"file": "settings",
+			"topic": "Git 与署名",
+			"type": "string",
+			"label": "PR 署名",
+			"desc": "添加到 PR 描述里的署名文字。设为空字符串则不加。",
+			"default": "🤖 Generated with [Claude Code](https://claude.com/claude-code)",
+			"doc": "attribution-pr"
+		},
+		{
+			"key": "attribution.sessionUrl",
+			"file": "settings",
+			"topic": "Git 与署名",
+			"type": "boolean",
+			"label": "附带会话链接",
+			"desc": "从云端或 Remote Control 会话提交、开 PR 时，是否附上 claude.ai 会话链接（提交里是 Claude-Session trailer）。设为 false 不附。",
+			"default": "true",
+			"doc": "attribution-sessionurl"
+		},
+		{
+			"key": "includeCoAuthoredBy",
+			"file": "settings",
+			"topic": "Git 与署名",
+			"type": "boolean",
+			"label": "添加署名（旧）",
+			"desc": "已弃用，改用 attribution。false 会去掉提交 trailer 和 PR 署名；设置了 attribution.commit 或 attribution.pr 后此键被忽略。",
+			"default": "true",
+			"doc": "includecoauthoredby"
+		},
+		{
+			"key": "includeGitInstructions",
+			"file": "settings",
+			"topic": "Git 与署名",
+			"type": "boolean",
+			"label": "内置 Git 说明",
+			"desc": "是否给 Claude 内置的提交/PR 工作流说明和仓库 git 状态快照。用自己的 git 工作流 skill 时可设为 false。",
+			"default": "true",
+			"doc": "includegitinstructions"
+		},
+		{
+			"key": "prUrlTemplate",
+			"file": "settings",
+			"topic": "Git 与署名",
+			"type": "string",
+			"label": "PR 链接模板",
+			"desc": "把 Claude Code 渲染的 PR 链接指向内部代码评审工具，可用 {host}、{owner}、{repo}、{number}、{url} 占位符。GitLab MR 链接不受影响。",
+			"default": "未设置",
+			"doc": "prurltemplate"
+		},
+		{
+			"key": "agent",
+			"file": "settings",
+			"topic": "智能体、会话与工作树",
+			"type": "string",
+			"label": "主线程智能体",
+			"desc": "让主会话以指定的 subagent 身份运行，套用它的系统提示词、工具限制和模型；也是 claude agents 派发会话的默认智能体。--agent 参数对单次会话优先。",
+			"default": "未设置，使用默认智能体",
+			"doc": "agent"
+		},
+		{
+			"key": "crossSessionInbound",
+			"file": "settings",
+			"topic": "智能体、会话与工作树",
+			"type": "enum",
+			"options": [
+				{
+					"value": "accept",
+					"label": "接收并交给 Claude"
+				},
+				{
+					"value": "hold",
+					"label": "只提示不投递"
+				},
+				{
+					"value": "refuse",
+					"label": "直接丢弃"
+				}
+			],
+			"label": "跨会话消息处理",
+			"desc": "如何处理从你其他 Claude Code 会话发来的消息。项目或本地配置只能设得比托管、--settings 和用户配置更严格。需要 v2.1.224 或更高版本。",
+			"default": "未设置，按会话权限模式逐条决定",
+			"doc": "crosssessioninbound"
+		},
+		{
+			"key": "disableAgentView",
+			"file": "settings",
+			"topic": "智能体、会话与工作树",
+			"type": "boolean",
+			"label": "禁用智能体视图",
+			"desc": "设为 true 关闭后台智能体和智能体视图：claude agents、--bg、/background 和按需 supervisor。可放在托管配置里对组织强制。",
+			"default": "未设置（可用）",
+			"doc": "disableagentview"
+		},
+		{
+			"key": "isolatePeerMachines",
+			"file": "settings",
+			"topic": "智能体、会话与工作树",
+			"type": "boolean",
+			"label": "跨机消息需批准",
+			"desc": "Claude 的 SendMessage 发往其他机器上的会话前需要你批准，bypassPermissions 模式下也会提示。任何作用域的 true 都生效。需要 v2.1.224 或更高版本。",
+			"default": "未设置（不提示）",
+			"doc": "isolatepeermachines"
+		},
+		{
+			"key": "processWrapper",
+			"file": "settings",
+			"topic": "智能体、会话与工作树",
+			"type": "string",
+			"label": "进程启动器",
+			"desc": "在 macOS 和 Linux 上给 Claude Code 启动的后台进程前加一个企业启动器命令，启动器须 exec 到 Claude Code。Windows 上忽略。只在用户或托管配置中生效，需要 v2.1.210 或更高版本。",
+			"default": "未设置",
+			"doc": "processwrapper"
+		},
+		{
+			"key": "teammateMode",
+			"file": "settings",
+			"topic": "智能体、会话与工作树",
+			"type": "enum",
+			"options": [
+				{
+					"value": "in-process",
+					"label": "在主终端窗格内"
+				},
+				{
+					"value": "auto",
+					"label": "自动"
+				},
+				{
+					"value": "tmux",
+					"label": "tmux 分屏"
+				},
+				{
+					"value": "iterm2",
+					"label": "iTerm2 原生分屏"
+				}
+			],
+			"label": "队友显示方式",
+			"desc": "agent team 队友显示在主终端窗格内还是分屏中。auto 在 tmux 或装有 it2 的 iTerm2 中分屏，否则在窗格内。--teammate-mode 对单次会话优先。",
+			"default": "in-process",
+			"doc": "teammatemode"
+		},
+		{
+			"key": "worktree",
+			"file": "settings",
+			"topic": "智能体、会话与工作树",
+			"type": "object",
+			"label": "工作树",
+			"desc": "配置 --worktree、EnterWorktree 工具、隔离 subagent 和后台会话如何创建和管理 git worktree。复制 .env 等被忽略的文件请用项目根目录的 .worktreeinclude。",
+			"default": "未设置",
+			"doc": "worktree"
+		},
+		{
+			"key": "worktree.baseRef",
+			"file": "settings",
+			"topic": "智能体、会话与工作树",
+			"type": "enum",
+			"options": [
+				{
+					"value": "fresh",
+					"label": "从远程默认分支"
+				},
+				{
+					"value": "head",
+					"label": "从当前本地 HEAD"
+				}
+			],
+			"label": "工作树起点",
+			"desc": "新 worktree 从哪个 ref 分出。fresh 用 origin/<默认分支>，得到干净的树；head 用当前 HEAD，包含未推送的提交。",
+			"default": "fresh",
+			"doc": "worktree-baseref"
+		},
+		{
+			"key": "worktree.bgIsolation",
+			"file": "settings",
+			"topic": "智能体、会话与工作树",
+			"type": "enum",
+			"options": [
+				{
+					"value": "worktree",
+					"label": "用 worktree 隔离"
+				},
+				{
+					"value": "none",
+					"label": "直接改工作副本"
+				}
+			],
+			"label": "后台会话隔离",
+			"desc": "后台会话如何隔离文件修改。worktree 会在会话调用 EnterWorktree 前阻止它在主检出中 Edit/Write；none 直接修改工作副本。手动转到后台的会话总是原地修改。",
+			"default": "worktree",
+			"doc": "worktree-bgisolation"
+		},
+		{
+			"key": "worktree.location",
+			"file": "settings",
+			"topic": "智能体、会话与工作树",
+			"type": "string",
+			"label": "SSH 工作树目录",
+			"desc": "Desktop SSH 会话在远程机器上创建 worktree 的目录，须为绝对路径或以 ~/ 开头。只有桌面应用读取，且只在远程机器的用户配置中生效；需要 Claude Desktop v1.44121.0 或更高版本。",
+			"default": "<project-root>/.claude/worktrees/",
+			"doc": "worktree-location"
+		},
+		{
+			"key": "worktree.sparsePaths",
+			"file": "settings",
+			"topic": "智能体、会话与工作树",
+			"type": "stringArray",
+			"label": "稀疏检出目录",
+			"desc": "每个 worktree 只通过 git sparse-checkout 检出这些目录（相对仓库根）和根目录文件，适合大型 monorepo。",
+			"default": "未设置，检出整个仓库",
+			"doc": "worktree-sparsepaths"
+		},
+		{
+			"key": "worktree.symlinkDirectories",
+			"file": "settings",
+			"topic": "智能体、会话与工作树",
+			"type": "stringArray",
+			"label": "软链接目录",
+			"desc": "把主仓库中的这些目录（相对仓库根）软链接进每个 worktree，避免重复占用磁盘，如 node_modules。",
+			"default": "未设置",
+			"doc": "worktree-symlinkdirectories"
+		},
+		{
+			"key": "appendPlugins",
+			"file": "settings",
+			"topic": "插件与技能",
+			"type": "stringArray",
+			"label": "后置运行的插件",
+			"desc": "列出托管插件（plugin-name@marketplace-name），它们的 mods 按顺序在用户安装的所有 mods 之后运行；同时出现在 prependPlugins 中的以前置为准。用户配置里只在无托管配置且非 Team/Enterprise 登录时生效。",
+			"default": "未设置",
+			"doc": "appendplugins"
+		},
+		{
+			"key": "disableBundledSkills",
+			"file": "settings",
+			"topic": "插件与技能",
+			"type": "boolean",
+			"label": "停用内置技能",
+			"desc": "设为 true 时移除 Claude Code 自带的技能和工作流，/init 等内置命令仍可输入但对模型隐藏。插件、.claude/skills/ 和 .claude/commands/ 中的技能不受影响。",
+			"default": "未设置，加载内置技能",
+			"doc": "disablebundledskills"
+		},
+		{
+			"key": "disableSkillShellExecution",
+			"file": "settings",
+			"topic": "插件与技能",
+			"type": "boolean",
+			"label": "禁止技能内联 Shell",
+			"desc": "设为 true 时，技能和自定义命令里的 !`...` 与 ```! 代码块不再执行，替换成一行提示文字。内置技能和托管配置下发的技能不受影响；托管配置里的 true 不能被其他文件的 false 推翻。",
+			"default": "未设置，内联 Shell 正常执行",
+			"doc": "disableskillshellexecution"
+		},
+		{
+			"key": "enabledPlugins",
+			"file": "settings",
+			"topic": "插件与技能",
+			"type": "json",
+			"label": "插件开关",
+			"desc": "按 plugin-name@marketplace-name 逐个开启（true）或关闭（false）插件，/plugin 命令会自动写入。项目配置优先于用户配置，想在本机关掉项目启用的插件要写在 .claude/settings.local.json；托管配置里设为 false 的插件在所有层级都不能安装。",
+			"default": "未设置，按各插件的 defaultEnabled",
+			"example": {
+				"code-formatter@team-tools": true,
+				"experimental-features@personal": false
+			},
+			"doc": "enabledplugins"
+		},
+		{
+			"key": "extraKnownMarketplaces",
+			"file": "settings",
+			"topic": "插件与技能",
+			"type": "json",
+			"label": "额外插件市场",
+			"desc": "按名称注册额外的插件市场，每项包含 source 对象和可选的 autoUpdate。source 支持 github、git、url、file、directory、settings 几种类型。仓库配置里的条目只有在接受文件夹信任后才生效。",
+			"default": "未设置",
+			"example": {
+				"acme-tools": {
+					"source": {
+						"source": "github",
+						"repo": "acme-corp/claude-plugins"
+					}
+				}
+			},
+			"doc": "extraknownmarketplaces"
+		},
+		{
+			"key": "pluginConfigs",
+			"file": "settings",
+			"topic": "插件与技能",
+			"type": "json",
+			"label": "插件配置项",
+			"desc": "保存插件 userConfig 对话框里填写的非敏感选项，按插件 ID 分组，通常由 Claude Code 自动写入，不用手改。只在用户或托管配置中生效，项目和本地配置里的条目会被忽略。",
+			"default": "未设置",
+			"example": {
+				"deployer@acme-tools": {
+					"options": {
+						"api_endpoint": "https://api.example.com"
+					}
+				}
+			},
+			"doc": "pluginconfigs"
+		},
+		{
+			"key": "prependPlugins",
+			"file": "settings",
+			"topic": "插件与技能",
+			"type": "stringArray",
+			"label": "前置运行的插件",
+			"desc": "列出托管插件（plugin-name@marketplace-name），它们的 mods 按顺序在用户安装的所有 mods 之前运行。托管配置里设置时要把 sec-default@builtin 列进去以保留内置防护。用户配置里只在无托管配置且非 Team/Enterprise 登录时生效。",
+			"default": "未设置",
+			"doc": "prependplugins"
+		},
+		{
+			"key": "skillOverrides",
+			"file": "settings",
+			"topic": "插件与技能",
+			"type": "stringMap",
+			"label": "技能可见性覆盖",
+			"desc": "按技能名设置可见性，不用改 SKILL.md：on 正常显示；name-only 只给 Claude 看名字；user-invocable-only 对 Claude 隐藏但仍可输入 /name；off 完全隐藏。不适用于插件技能。",
+			"default": "未设置，所有技能为 on",
+			"example": {
+				"legacy-context": "name-only",
+				"deploy": "off"
+			},
+			"doc": "skilloverrides"
+		},
+		{
+			"key": "syncClaudeAiPlugins",
+			"file": "settings",
+			"topic": "插件与技能",
+			"type": "boolean",
+			"label": "同步 claude.ai 插件",
+			"desc": "只有 false 生效：停止下载 claude.ai 账号中启用的插件，并停止加载已同步的插件；true 等同于未设置。项目配置无法替你关闭；需要 v2.1.273 或更高版本。",
+			"default": "未设置，登录 claude.ai 账号时同步",
+			"doc": "syncclaudeaiplugins"
+		},
+		{
+			"key": "syncClaudeAiSkills",
+			"file": "settings",
+			"topic": "插件与技能",
+			"type": "boolean",
+			"label": "同步 claude.ai 技能",
+			"desc": "只有 false 生效：停止下载 claude.ai 账号中启用的技能，并停止加载已同步的技能；true 等同于未设置。项目配置无法替你关闭。",
+			"default": "未设置，登录 claude.ai 账号时同步",
+			"doc": "syncclaudeaiskills"
+		},
+		{
+			"key": "allowedMcpServers",
+			"file": "settings",
+			"topic": "MCP",
+			"type": "json",
+			"label": "MCP 服务器白名单",
+			"desc": "只允许匹配条目的 MCP 服务器，每个条目只能有 serverName、serverCommand 或 serverUrl 其中一个键。内置服务器和组织下发的服务器不受白名单限制；同时在黑名单里的服务器仍会被拦下。要强制执行请放在托管配置里。",
+			"default": "未设置，允许所有服务器；空数组则拦下用户添加的所有服务器",
+			"example": [
+				{
+					"serverName": "github"
+				},
+				{
+					"serverCommand": [
+						"npx",
+						"-y",
+						"@modelcontextprotocol/server-filesystem"
+					]
+				}
+			],
+			"doc": "allowedmcpservers"
+		},
+		{
+			"key": "deniedMcpServers",
+			"file": "settings",
+			"topic": "MCP",
+			"type": "json",
+			"label": "MCP 服务器黑名单",
+			"desc": "拦下匹配的 MCP 服务器，不论它来自插件、--mcp-config、managed-mcp.json 还是 claude.ai 连接器。条目格式与 allowedMcpServers 相同，优先级高于白名单。",
+			"default": "未设置，不拦任何服务器",
+			"example": [
+				{
+					"serverName": "filesystem"
+				}
+			],
+			"doc": "deniedmcpservers"
+		},
+		{
+			"key": "disableClaudeAiConnectors",
+			"file": "settings",
+			"topic": "MCP",
+			"type": "boolean",
+			"label": "停用 claude.ai 连接器",
+			"desc": "设为 true 时不再拉取和连接 claude.ai 账号里的 MCP 连接器。任一配置文件里的 true 都生效，项目级的 false 不能推翻用户或托管配置的 true；--mcp-config 显式传入的服务器不受影响。",
+			"default": "false",
+			"doc": "disableclaudeaiconnectors"
+		},
+		{
+			"key": "disabledMcpjsonServers",
+			"file": "settings",
+			"topic": "MCP",
+			"type": "stringArray",
+			"label": "已拒绝的项目 MCP",
+			"desc": "列出项目 .mcp.json 中要拒绝的服务器名，Claude Code 不会连接也不会再询问。任一配置文件里的拒绝都生效，优先于 enabledMcpjsonServers 和 enableAllProjectMcpServers。",
+			"default": "未设置",
+			"doc": "disabledmcpjsonservers"
+		},
+		{
+			"key": "enableAllProjectMcpServers",
+			"file": "settings",
+			"topic": "MCP",
+			"type": "boolean",
+			"label": "自动批准项目 MCP",
+			"desc": "设为 true 时，项目 .mcp.json 里定义的所有 MCP 服务器无需确认直接批准。在未信任的文件夹里，共享的项目配置中的这个键会被忽略；disabledMcpjsonServers 里的服务器仍会被拒绝。",
+			"default": "未设置，逐个询问",
+			"doc": "enableallprojectmcpservers"
+		},
+		{
+			"key": "enabledMcpjsonServers",
+			"file": "settings",
+			"topic": "MCP",
+			"type": "stringArray",
+			"label": "已批准的项目 MCP",
+			"desc": "列出项目 .mcp.json 中直接连接、不再询问的服务器名。在批准对话框里同意某个服务器时，Claude Code 会把它写进 .claude/settings.local.json。",
+			"default": "未设置",
+			"doc": "enabledmcpjsonservers"
+		},
+		{
+			"key": "allowedHttpHookUrls",
+			"file": "settings",
+			"topic": "Hooks 与自动化",
+			"type": "stringArray",
+			"label": "Hook URL 白名单",
+			"desc": "限制 HTTP Hooks 能请求的 URL，支持 * 通配符；设置后不匹配的 HTTP Hook 直接被拦下，空数组会拦下所有 HTTP Hook。对包括托管配置在内的所有来源都生效，多个文件的数组会合并。",
+			"default": "未设置，允许任意 URL",
+			"doc": "allowedhttphookurls"
+		},
+		{
+			"key": "disableAllHooks",
+			"file": "settings",
+			"topic": "Hooks 与自动化",
+			"type": "boolean",
+			"label": "停用所有 Hooks",
+			"desc": "设为 true 时停用 Hooks、自定义状态栏和自定义文件建议命令，不用从配置里删除。写在非托管配置里时，托管 Hooks、Agent SDK Hooks 和组织的 mods 仍会运行；停用期间 /goal 无法使用。",
+			"default": "未设置，Hooks 正常运行",
+			"doc": "disableallhooks"
+		},
+		{
+			"key": "disableWorkflows",
+			"file": "settings",
+			"topic": "Hooks 与自动化",
+			"type": "boolean",
+			"label": "对所有人关闭工作流",
+			"desc": "设为 true 时，为配置覆盖到的所有人关闭动态工作流和内置工作流命令，适合组织在托管配置里使用。false 等于未设置，此时由 enableWorkflows 和套餐默认值决定。",
+			"default": "false",
+			"doc": "disableworkflows"
+		},
+		{
+			"key": "enableWorkflows",
+			"file": "settings",
+			"topic": "Hooks 与自动化",
+			"type": "boolean",
+			"label": "启用动态工作流",
+			"desc": "为自己单独开启或关闭动态工作流，对应 /config 里的 Dynamic workflows 开关。disableWorkflows、组织策略或 CLAUDE_CODE_DISABLE_WORKFLOWS 关闭工作流时，这里设 true 也打不开。",
+			"default": "未设置，除 Pro 套餐外默认开启",
+			"doc": "enableworkflows"
+		},
+		{
+			"key": "hooks",
+			"file": "settings",
+			"topic": "Hooks 与自动化",
+			"type": "json",
+			"label": "Hooks 配置",
+			"desc": "在 Claude Code 生命周期的各个时点（如工具调用前、会话开始时）运行命令、提示词、智能体、HTTP 请求或 MCP 工具。按 Hook 事件分组，每个事件下是 { matcher, hooks } 组成的数组。多个配置文件里的 Hooks 会合并，托管配置里的 Hooks 不能被其他文件移除。",
+			"default": "未设置，不运行任何 Hook",
+			"example": {
+				"PreToolUse": [
+					{
+						"matcher": "Bash",
+						"hooks": [
+							{
+								"type": "command",
+								"command": "~/.claude/hooks/check-bash.sh"
+							}
+						]
+					}
+				]
+			},
+			"doc": "hooks"
+		},
+		{
+			"key": "httpHookAllowedEnvVars",
+			"file": "settings",
+			"topic": "Hooks 与自动化",
+			"type": "stringArray",
+			"label": "Hook 可用环境变量",
+			"desc": "限定 HTTP Hooks 能插入请求头的环境变量名。只有 Hook 自己的 allowedEnvVars 和这里同时列出的变量才能使用，用来防止 Hook 读取不该读的密钥。",
+			"default": "未设置，以各 Hook 自己的 allowedEnvVars 为准",
+			"doc": "httphookallowedenvvars"
+		},
+		{
+			"key": "workflowKeywordTriggerEnabled",
+			"file": "settings",
+			"topic": "Hooks 与自动化",
+			"type": "boolean",
+			"label": "关键词触发工作流",
+			"desc": "控制在提示词里输入 ultracode 是否触发动态工作流，对应 /config 里的 Ultracode keyword trigger。设为 false 后可以正常输入这个词，不影响 /workflows 和已保存的工作流命令。",
+			"default": "true",
+			"doc": "workflowkeywordtriggerenabled"
+		},
+		{
+			"key": "workflowSizeGuideline",
+			"file": "settings",
+			"topic": "Hooks 与自动化",
+			"type": "enum",
+			"options": [
+				{
+					"value": "unrestricted",
+					"label": "不限，按任务决定"
+				},
+				{
+					"value": "small",
+					"label": "小（少于 5 个智能体）"
+				},
+				{
+					"value": "medium",
+					"label": "中（少于 10 个智能体）"
+				},
+				{
+					"value": "large",
+					"label": "大（少于 50 个智能体）"
+				}
+			],
+			"label": "工作流规模建议",
+			"desc": "Claude 编写动态工作流时目标使用的智能体数量，只是建议，不是硬上限。优先于 /config 里的 Dynamic workflow size 选项；需要 v2.1.219 或更高版本。",
+			"default": "medium；Pro 套餐（v2.1.271 起）为 small",
+			"doc": "workflowsizeguideline"
+		},
+		{
+			"key": "sandbox",
+			"file": "settings",
+			"topic": "沙盒",
+			"type": "object",
+			"label": "沙盒",
+			"desc": "把 Claude 运行的 Bash 命令与文件系统和网络隔离开，支持 macOS、Linux 和 WSL2。用 enabled 开启，再通过 filesystem、network、credentials 子对象收紧或放宽限制。托管配置里的布尔值会覆盖开发者的设置，数组会跨配置文件合并。",
+			"default": "未设置，命令不在沙盒中运行",
+			"doc": "sandbox"
+		},
+		{
+			"key": "sandbox.allowAppleEvents",
+			"file": "settings",
+			"topic": "沙盒",
+			"type": "boolean",
+			"label": "允许 Apple Events",
+			"desc": "允许 macOS 沙盒内的命令发送 Apple Events，open、osascript 等需要它，否则报 -600 错误。这会去掉代码执行隔离：命令可不经提示启动沙盒外的应用。只在用户或托管配置中生效。",
+			"default": "false",
+			"doc": "sandbox-allowappleevents"
+		},
+		{
+			"key": "sandbox.allowNestedUserNamespaces",
+			"file": "settings",
+			"topic": "沙盒",
+			"type": "boolean",
+			"label": "允许嵌套用户命名空间",
+			"desc": "允许 Linux 和 WSL2 沙盒内的命令创建用户命名空间，Chromium/Electron 自带沙盒、嵌套 bubblewrap、unshare 需要它。会关闭一道安全边界，沙盒内代码可能逃逸到沙盒外。项目配置里的 true 会被忽略；需要 v2.1.305 或更高版本。",
+			"default": "false",
+			"doc": "sandbox-allownestedusernamespaces"
+		},
+		{
+			"key": "sandbox.allowUnsandboxedCommands",
+			"file": "settings",
+			"topic": "沙盒",
+			"type": "boolean",
+			"label": "允许沙盒外重试",
+			"desc": "沙盒拦下命令后，是否允许 Claude 用 dangerouslyDisableSandbox 参数在沙盒外重试。设为 false 即严格沙盒模式，托管配置里设 false 会对覆盖到的开发者强制执行。",
+			"default": "true",
+			"doc": "sandbox-allowunsandboxedcommands"
+		},
+		{
+			"key": "sandbox.autoAllowBashIfSandboxed",
+			"file": "settings",
+			"topic": "沙盒",
+			"type": "boolean",
+			"label": "沙盒内命令免确认",
+			"desc": "沙盒内的 Bash 命令不再弹权限确认；deny 规则和带内容的 ask 规则（如 Bash(git push *)）仍然生效。设为 false 则沙盒命令也走常规权限流程。",
+			"default": "true",
+			"doc": "sandbox-autoallowbashifsandboxed"
+		},
+		{
+			"key": "sandbox.credentials",
+			"file": "settings",
+			"topic": "沙盒",
+			"type": "object",
+			"label": "沙盒凭据保护",
+			"desc": "声明要对沙盒命令保护的凭据文件和环境变量。deny 在沙盒内隐藏凭据，mask 让命令只看到占位值、由沙盒代理在出站请求中替换真实值。只保护你列出的条目，没有内置清单。",
+			"default": "未设置，不保护任何凭据",
+			"doc": "sandbox-credentials"
+		},
+		{
+			"key": "sandbox.credentials.allowPlaintextInject",
+			"file": "settings",
+			"topic": "沙盒",
+			"type": "boolean",
+			"label": "允许明文 HTTP 替换",
+			"desc": "允许在明文 HTTP 请求上也做 mask 凭据替换，而不只是 TLS 解密后的 HTTPS。明文下凭据会裸传、对端身份无法验证，只在可信测试网络中打开。只在用户或托管配置中生效。",
+			"default": "false",
+			"doc": "sandbox-credentials-allowplaintextinject"
+		},
+		{
+			"key": "sandbox.credentials.awsPairs",
+			"file": "settings",
+			"topic": "沙盒",
+			"type": "json",
+			"label": "AWS 凭据变量配对",
+			"desc": "把名字不标准的已 mask 环境变量组成一组 AWS 凭据，用于 SigV4 重新签名；标准的 AWS_ACCESS_KEY_ID 等三个变量会自动配对。只在用户或托管配置中生效；需要 v2.1.224 或更高版本。",
+			"default": "未设置，只自动配对标准变量",
+			"example": [
+				{
+					"accessKeyIdVar": "MY_KEY_ID",
+					"secretAccessKeyVar": "MY_SECRET_KEY"
+				}
+			],
+			"doc": "sandbox-credentials-awspairs"
+		},
+		{
+			"key": "sandbox.credentials.envVars",
+			"file": "settings",
+			"topic": "沙盒",
+			"type": "json",
+			"label": "受保护的环境变量",
+			"desc": "每项包含 name 和 mode（deny 或 mask）。deny 从沙盒命令环境中移除该变量；mask 只给命令一个占位值，代理在发往 injectHosts 的请求中替换真实值。项目和本地配置中的 mask 条目会被丢弃。",
+			"default": "未设置",
+			"example": [
+				{
+					"name": "NPM_TOKEN",
+					"mode": "deny"
+				},
+				{
+					"name": "GITHUB_TOKEN",
+					"mode": "mask",
+					"injectHosts": [
+						"api.github.com"
+					]
+				}
+			],
+			"doc": "sandbox-credentials-envvars"
+		},
+		{
+			"key": "sandbox.credentials.files",
+			"file": "settings",
+			"topic": "沙盒",
+			"type": "json",
+			"label": "受保护的凭据文件",
+			"desc": "每项包含 path 和 mode（deny 或 mask），mask 条目还可设 extract、decode、injectHosts 等字段。deny 阻止读取；mask 在 Linux/WSL2 上提供占位副本，在 macOS 上等同于不可读。项目和本地配置中的 mask 条目会被丢弃，mask 需要 v2.1.221 或更高版本。",
+			"default": "未设置",
+			"example": [
+				{
+					"path": "~/.aws/credentials",
+					"mode": "deny"
+				}
+			],
+			"doc": "sandbox-credentials-files"
+		},
+		{
+			"key": "sandbox.credentials.sigv4",
+			"file": "settings",
+			"topic": "沙盒",
+			"type": "json",
+			"label": "无法重签的 AWS 请求",
+			"desc": "设置代理如何处理无法重新签名的 AWS 请求，streaming、presigned、sigv4a 三类各取 deny（代理直接失败）或 passthrough（原样转发，由 AWS 拒绝）。只在用户或托管配置中生效；需要 v2.1.224 或更高版本。",
+			"default": "未设置，全部为 deny",
+			"example": {
+				"streaming": "passthrough"
+			},
+			"doc": "sandbox-credentials-sigv4"
+		},
+		{
+			"key": "sandbox.enabled",
+			"file": "settings",
+			"topic": "沙盒",
+			"type": "boolean",
+			"label": "启用沙盒",
+			"desc": "为 Bash 命令开启沙盒。Linux 和 WSL2 需要安装 bubblewrap 和 socat；沙盒无法启动时命令会不经沙盒直接运行，除非同时设置 failIfUnavailable。",
+			"default": "false",
+			"doc": "sandbox-enabled"
+		},
+		{
+			"key": "sandbox.enableWeakerNestedSandbox",
+			"file": "settings",
+			"topic": "沙盒",
+			"type": "boolean",
+			"label": "弱化嵌套沙盒",
+			"desc": "在无特权 Docker 容器中运行 Linux 沙盒时使用：内层沙盒改为绑定挂载容器已有的 /proc，会暴露进程信息、降低安全性。仅限 Linux 和 WSL2，只在外层容器已提供足够隔离时使用。",
+			"default": "false",
+			"doc": "sandbox-enableweakernestedsandbox"
+		},
+		{
+			"key": "sandbox.enableWeakerNetworkIsolation",
+			"file": "settings",
+			"topic": "沙盒",
+			"type": "boolean",
+			"label": "弱化网络隔离",
+			"desc": "允许 macOS 沙盒内的命令访问系统 TLS 信任服务 com.apple.trustd.agent，gh、gcloud、terraform 等 Go 工具在配合 MITM 代理和自定义 CA 时需要它。会开出一条潜在的数据外泄通道。",
+			"default": "false",
+			"doc": "sandbox-enableweakernetworkisolation"
+		},
+		{
+			"key": "sandbox.excludedCommands",
+			"file": "settings",
+			"topic": "沙盒",
+			"type": "stringArray",
+			"label": "沙盒外运行的命令",
+			"desc": "列出在沙盒外运行的命令，语法同 Bash(...) 权限规则，如 docker *。只有覆盖整条调用里所有命令时才生效，含 cd、重定向、子 shell 等的调用仍留在沙盒内；排除的命令仍走常规权限流程。",
+			"default": "未设置，不排除任何命令",
+			"doc": "sandbox-excludedcommands"
+		},
+		{
+			"key": "sandbox.failIfUnavailable",
+			"file": "settings",
+			"topic": "沙盒",
+			"type": "boolean",
+			"label": "沙盒不可用时退出",
+			"desc": "开启沙盒但它无法启动（缺依赖或平台不支持）时，让 Claude Code 启动报错退出，而不是不经沙盒运行命令。适合把沙盒当作安全门槛的托管部署。",
+			"default": "false",
+			"doc": "sandbox-failifunavailable"
+		},
+		{
+			"key": "sandbox.filesystem",
+			"file": "settings",
+			"topic": "沙盒",
+			"type": "object",
+			"label": "沙盒文件系统",
+			"desc": "控制沙盒命令能读写哪些路径。默认可写工作目录、临时目录和额外添加的目录，可读其余文件系统（包括凭据文件）。Edit、Read 权限规则也会并入这里的路径列表。",
+			"default": "未设置，使用默认读写边界",
+			"doc": "sandbox-filesystem"
+		},
+		{
+			"key": "sandbox.filesystem.allowRead",
+			"file": "settings",
+			"topic": "沙盒",
+			"type": "stringArray",
+			"label": "重新允许读取路径",
+			"desc": "在 denyRead 封锁的范围内重新开放某些路径的读取，用来实现只能读工作区。. 在项目配置中表示项目根；更具体的 denyRead 条目仍优先。",
+			"default": "未设置",
+			"doc": "sandbox-filesystem-allowread"
+		},
+		{
+			"key": "sandbox.filesystem.allowWrite",
+			"file": "settings",
+			"topic": "沙盒",
+			"type": "stringArray",
+			"label": "额外可写路径",
+			"desc": "在默认可写目录之外再允许写入的路径，例如 kubectl 或构建工具需要写到项目外时。路径前缀：/ 为绝对路径，~/ 为主目录，./ 或无前缀为项目根（用户配置里为 ~/.claude）。不能解除受保护路径。",
+			"default": "未设置，只能写工作目录、临时目录和额外添加的目录",
+			"doc": "sandbox-filesystem-allowwrite"
+		},
+		{
+			"key": "sandbox.filesystem.denyRead",
+			"file": "settings",
+			"topic": "沙盒",
+			"type": "stringArray",
+			"label": "禁止读取路径",
+			"desc": "禁止沙盒命令读取的路径，例如默认可读的 ~/.aws/credentials。Read(...) deny 权限规则也会并入；filesystem.disabled 为 true 时不生效。",
+			"default": "未设置，保留默认读权限（包括凭据文件）",
+			"doc": "sandbox-filesystem-denyread"
+		},
+		{
+			"key": "sandbox.filesystem.denyWrite",
+			"file": "settings",
+			"topic": "沙盒",
+			"type": "stringArray",
+			"label": "禁止写入路径",
+			"desc": "禁止沙盒命令写入的路径，可以是本来可写目录中的子路径。Edit(...) deny 权限规则的路径也会并入。",
+			"default": "未设置",
+			"doc": "sandbox-filesystem-denywrite"
+		},
+		{
+			"key": "sandbox.filesystem.disabled",
+			"file": "settings",
+			"topic": "沙盒",
+			"type": "boolean",
+			"label": "关闭文件系统隔离",
+			"desc": "跳过文件系统隔离、只保留网络隔离，沙盒命令可任意读写主机文件，此时 denyRead 和 credentials.files 的 deny 条目不再生效。只在用户或托管配置中生效；需要 v2.1.216 或更高版本。",
+			"default": "false",
+			"doc": "sandbox-filesystem-disabled"
+		},
+		{
+			"key": "sandbox.ignoreViolations",
+			"file": "settings",
+			"topic": "沙盒",
+			"type": "json",
+			"label": "忽略的违规报告",
+			"desc": "不再报告预期会被拒绝的访问，访问本身仍被拦下。键是要匹配的命令子串（* 表示所有命令），值是要忽略的违规内容子串数组，通常是路径。",
+			"default": "未设置，报告所有违规",
+			"example": {
+				"*": [
+					"/etc/hosts"
+				]
+			},
+			"doc": "sandbox-ignoreviolations"
+		},
+		{
+			"key": "sandbox.network",
+			"file": "settings",
+			"topic": "沙盒",
+			"type": "object",
+			"label": "沙盒网络",
+			"desc": "控制沙盒命令能访问哪些主机、端口和套接字，出站流量经过一个执行这些列表的代理。数组子键跨配置文件合并，WebFetch(domain:...) 权限规则也会并入。",
+			"default": "未设置，不预先放行域名，由权限模式决定",
+			"doc": "sandbox-network"
+		},
+		{
+			"key": "sandbox.network.allowAllUnixSockets",
+			"file": "settings",
+			"topic": "沙盒",
+			"type": "boolean",
+			"label": "放行全部 Unix 套接字",
+			"desc": "允许沙盒命令连接任意 Unix 套接字。在 Linux 和 WSL2 上这是放行 Unix 套接字的唯一办法；在 WSL2 上还会重新开放启动 cmd.exe 等 Windows 程序的通道。",
+			"default": "false",
+			"doc": "sandbox-network-allowallunixsockets"
+		},
+		{
+			"key": "sandbox.network.allowedDomains",
+			"file": "settings",
+			"topic": "沙盒",
+			"type": "stringArray",
+			"label": "放行的域名",
+			"desc": "预先放行的出站域名，不再询问。支持 *.example.com 通配子域名，可加 :port 只放行某个端口；IPv6 写成 [::1] 形式。设置 allowManagedDomainsOnly 后只认托管配置里的条目。",
+			"default": "未设置，由权限模式决定新主机如何处理",
+			"doc": "sandbox-network-alloweddomains"
+		},
+		{
+			"key": "sandbox.network.allowLocalBinding",
+			"file": "settings",
+			"topic": "沙盒",
+			"type": "boolean",
+			"label": "允许本地监听端口",
+			"desc": "允许 macOS 沙盒内的命令监听端口（如启动开发服务器）并连接 localhost 任意端口。监听非回环地址时其他机器也能连入；在 Linux 和 WSL2 上无效。",
+			"default": "false",
+			"doc": "sandbox-network-allowlocalbinding"
+		},
+		{
+			"key": "sandbox.network.allowMachLookup",
+			"file": "settings",
+			"topic": "沙盒",
+			"type": "stringArray",
+			"label": "允许的 Mach 服务",
+			"desc": "额外允许 macOS 沙盒查找的 XPC/Mach 服务名，iOS 模拟器、Playwright 等工具需要。末尾的 * 匹配前缀，单独的 * 匹配所有服务。",
+			"default": "未设置",
+			"doc": "sandbox-network-allowmachlookup"
+		},
+		{
+			"key": "sandbox.network.allowUnixSockets",
+			"file": "settings",
+			"topic": "沙盒",
+			"type": "stringArray",
+			"label": "允许的 Unix 套接字",
+			"desc": "列出 macOS 沙盒命令可以连接的 Unix 套接字路径，Linux 和 WSL2 上忽略此项。注意放行 /var/run/docker.sock 这类套接字等于交出很大的权限。",
+			"default": "未设置，macOS 沙盒拦截所有 Unix 套接字",
+			"doc": "sandbox-network-allowunixsockets"
+		},
+		{
+			"key": "sandbox.network.deniedDomains",
+			"file": "settings",
+			"topic": "沙盒",
+			"type": "stringArray",
+			"label": "禁止的域名",
+			"desc": "阻止访问的出站域名，语法同 allowedDomains，即使同时在放行列表中也会被拦下。所有配置来源的条目始终合并，开发者总能收紧禁止列表。",
+			"default": "未设置",
+			"doc": "sandbox-network-denieddomains"
+		},
+		{
+			"key": "sandbox.network.httpProxyPort",
+			"file": "settings",
+			"topic": "沙盒",
+			"type": "integer",
+			"label": "HTTP 代理端口",
+			"desc": "让沙盒使用你自己的 HTTP 代理（本地 TCP 端口），由该代理接管过滤，Claude Code 不再对这部分流量应用域名列表和网络询问。",
+			"default": "未设置，使用 Claude Code 自带代理",
+			"doc": "sandbox-network-httpproxyport"
+		},
+		{
+			"key": "sandbox.network.socksProxyPort",
+			"file": "settings",
+			"topic": "沙盒",
+			"type": "integer",
+			"label": "SOCKS 代理端口",
+			"desc": "让沙盒使用你自己的 SOCKS5 代理（本地 TCP 端口），由该代理接管过滤。只设 HTTP 或 SOCKS 其中一个时，另一种协议仍走 Claude Code 自带代理。",
+			"default": "未设置，使用 Claude Code 自带代理",
+			"doc": "sandbox-network-socksproxyport"
+		},
+		{
+			"key": "sandbox.network.strictAllowlist",
+			"file": "settings",
+			"topic": "沙盒",
+			"type": "boolean",
+			"label": "严格域名白名单",
+			"desc": "设为 true 时直接拒绝白名单之外的主机，而不是弹窗询问。只在用户或托管配置中生效，仓库配置无法开关；只作用于沙盒命令，不影响 WebFetch。需要 v2.1.219 或更高版本。",
+			"default": "false",
+			"doc": "sandbox-network-strictallowlist"
+		},
+		{
+			"key": "sandbox.network.tlsTerminate",
+			"file": "settings",
+			"topic": "沙盒",
+			"type": "json",
+			"label": "代理 TLS 解密",
+			"desc": "实验功能：让沙盒代理终止 TLS 以读取 HTTPS 内容，mask 凭据替换依赖它。设为 {} 每次会话生成临时 CA，或用 caCertPath、caKeyPath 指定自己的证书。只在用户或托管配置中生效。",
+			"default": "未设置，不解密 TLS",
+			"example": {},
+			"doc": "sandbox-network-tlsterminate"
+		},
+		{
+			"key": "sandbox.ripgrep",
+			"file": "settings",
+			"topic": "沙盒",
+			"type": "json",
+			"label": "自定义 ripgrep",
+			"desc": "让沙盒使用你指定的 ripgrep 程序，command 为程序路径，可选 args 为前置参数数组。只在用户或托管配置中生效。",
+			"default": "未设置，使用与 Claude Code 相同的 ripgrep",
+			"example": {
+				"command": "/usr/local/bin/rg"
+			},
+			"doc": "sandbox-ripgrep"
+		},
+		{
+			"key": "apiKeyHelper",
+			"file": "settings",
+			"topic": "认证与服务商",
+			"type": "string",
+			"label": "API 凭据脚本",
+			"desc": "用自定义 shell 命令生成凭据，输出同时作为 X-Api-Key 和 Authorization: Bearer 头发送，适合轮换的短期令牌。结果默认缓存 5 分钟，遇到 401/403 会重跑；来自项目或本地配置时需先信任工作区。",
+			"default": "未设置",
+			"doc": "apikeyhelper"
+		},
+		{
+			"key": "awsAuthRefresh",
+			"file": "settings",
+			"topic": "认证与服务商",
+			"type": "string",
+			"label": "AWS 凭据刷新命令",
+			"desc": "Bedrock 凭据失效时运行的命令（如 aws sso login），用来刷新 .aws 目录里的凭据。Claude Code 先用 STS 校验，失败才运行。",
+			"default": "未设置",
+			"doc": "awsauthrefresh"
+		},
+		{
+			"key": "awsCredentialExport",
+			"file": "settings",
+			"topic": "认证与服务商",
+			"type": "string",
+			"label": "AWS 凭据导出命令",
+			"desc": "运行命令并把其以 JSON 输出的 AWS 凭据用于 Bedrock 调用，凭据只作用于 Claude Code 自己的 Bedrock 客户端。设置后每次都会运行，不先检查现有凭据。",
+			"default": "未设置，使用默认 AWS 凭据链",
+			"doc": "awscredentialexport"
+		},
+		{
+			"key": "forceLoginGatewayUrl",
+			"file": "settings",
+			"topic": "认证与服务商",
+			"type": "string",
+			"label": "云网关地址",
+			"desc": "/login 的 Cloud gateway 页面连接的网关完整 URL（含协议）。在托管配置中设置会让机器只能走网关登录；v2.1.295 起没有托管来源时也读用户配置。",
+			"default": "未设置",
+			"doc": "forcelogingatewayurl"
+		},
+		{
+			"key": "forceLoginMethod",
+			"file": "settings",
+			"topic": "认证与服务商",
+			"type": "enum",
+			"options": [
+				{
+					"value": "claudeai",
+					"label": "只允许 claude.ai 账户"
+				},
+				{
+					"value": "console",
+					"label": "只允许 Claude Console 账户"
+				},
+				{
+					"value": "gateway",
+					"label": "走云网关登录"
+				}
+			],
+			"label": "限制登录方式",
+			"desc": "限制能用哪类账户登录，管理员通常放在托管配置并配合 forceLoginOrgUUID。gateway 只在托管来源中生效，其他位置视为未设置。",
+			"default": "未设置，用户自选",
+			"doc": "forceloginmethod"
+		},
+		{
+			"key": "forceLoginOrgUUID",
+			"file": "settings",
+			"topic": "认证与服务商",
+			"type": "json",
+			"label": "限制登录组织",
+			"desc": "要求 claude.ai 登录属于指定的 Anthropic 组织，可填单个 UUID 字符串或 UUID 数组。只有托管来源会强制；其他配置里的单个 UUID 只在登录时预选该组织。",
+			"default": "未设置，任何组织都可登录",
+			"example": "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx",
+			"doc": "forceloginorguuid"
+		},
+		{
+			"key": "gcpAuthRefresh",
+			"file": "settings",
+			"topic": "认证与服务商",
+			"type": "string",
+			"label": "GCP 凭据刷新命令",
+			"desc": "Google Cloud 应用默认凭据过期或无法加载时运行的刷新命令，供 Agent Platform（Vertex）请求使用。",
+			"default": "未设置",
+			"doc": "gcpauthrefresh"
+		},
+		{
+			"key": "otelHeadersHelper",
+			"file": "settings",
+			"topic": "认证与服务商",
+			"type": "string",
+			"label": "OTel 请求头脚本",
+			"desc": "生成 OpenTelemetry 导出请求头的命令，适合令牌会轮换的后端。启动时及之后定期运行，需在 stdout 输出字符串值的 JSON 对象。",
+			"default": "未设置",
+			"doc": "otelheadershelper"
+		},
+		{
+			"key": "agentPushNotifEnabled",
+			"file": "settings",
+			"topic": "远程、桌面与通知",
+			"type": "boolean",
+			"label": "主动推送",
+			"desc": "允许 Claude 在它认为值得时（如长任务完成）向手机发推送，需要 Remote Control 已连接。claude remote-control 服务器下的会话改用账户里保存的值。",
+			"default": "false",
+			"doc": "agentpushnotifenabled"
+		},
+		{
+			"key": "awaySummaryEnabled",
+			"file": "settings",
+			"topic": "远程、桌面与通知",
+			"type": "boolean",
+			"label": "离开后回顾",
+			"desc": "离开终端几分钟后回来时显示一行会话回顾。设为 false 关闭；非交互模式从不显示。",
+			"default": "未设置（开启）",
+			"doc": "awaysummaryenabled"
+		},
+		{
+			"key": "disableArtifact",
+			"file": "settings",
+			"topic": "远程、桌面与通知",
+			"type": "boolean",
+			"label": "禁用工件（旧）",
+			"desc": "已弃用，改用 enableArtifact。只有 true 生效，等同 enableArtifact: false；false 会被忽略。",
+			"default": "未设置",
+			"doc": "disableartifact"
+		},
+		{
+			"key": "disableDeepLinkRegistration",
+			"file": "settings",
+			"topic": "远程、桌面与通知",
+			"type": "enum",
+			"options": [
+				{
+					"value": "disable",
+					"label": "不注册"
+				}
+			],
+			"label": "禁用深链注册",
+			"desc": "阻止 Claude Code 向系统注册 claude-cli:// 协议处理器（默认在交互会话发出第一条提示后注册）。只能取字符串 \"disable\"。",
+			"default": "未设置，会注册",
+			"doc": "disabledeeplinkregistration"
+		},
+		{
+			"key": "disableRemoteControl",
+			"file": "settings",
+			"topic": "远程、桌面与通知",
+			"type": "boolean",
+			"label": "禁用远程控制",
+			"desc": "设为 true 后拒绝 claude remote-control、--remote-control 参数、自动连接和会话内开关。可放在托管配置里按设备强制。",
+			"default": "false",
+			"doc": "disableremotecontrol"
+		},
+		{
+			"key": "enableArtifact",
+			"file": "settings",
+			"topic": "远程、桌面与通知",
+			"type": "boolean",
+			"label": "工件工具",
+			"desc": "设为 false 关闭把会话输出发布为 claude.ai 私密网页的 Artifact 工具。任何配置文件都能关闭它，但 true 不能覆盖别处的关闭，等同于不设置。",
+			"default": "未设置，按账户可用性",
+			"doc": "enableartifact"
+		},
+		{
+			"key": "inputNeededNotifEnabled",
+			"file": "settings",
+			"topic": "远程、桌面与通知",
+			"type": "boolean",
+			"label": "待处理时推送",
+			"desc": "有权限提示或问题等你处理时向手机推送通知，只在 Remote Control 已连接时发送。",
+			"default": "false",
+			"doc": "inputneedednotifenabled"
+		},
+		{
+			"key": "preferredNotifChannel",
+			"file": "settings",
+			"topic": "远程、桌面与通知",
+			"type": "enum",
+			"options": [
+				{
+					"value": "auto",
+					"label": "自动"
+				},
+				{
+					"value": "terminal_bell",
+					"label": "终端响铃"
+				},
+				{
+					"value": "iterm2",
+					"label": "iTerm2 通知"
+				},
+				{
+					"value": "iterm2_with_bell",
+					"label": "iTerm2 通知加响铃"
+				},
+				{
+					"value": "kitty",
+					"label": "Kitty 通知"
+				},
+				{
+					"value": "ghostty",
+					"label": "Ghostty 通知"
+				},
+				{
+					"value": "notifications_disabled",
+					"label": "不通知"
+				}
+			],
+			"label": "本地通知方式",
+			"desc": "任务完成或权限提示等待时的通知方式。auto 在 iTerm2、Ghostty、Kitty 发桌面通知，Terminal.app 仅在关闭有声响铃时响铃，其他终端不通知。",
+			"default": "auto",
+			"doc": "preferrednotifchannel"
+		},
+		{
+			"key": "remote.defaultEnvironmentId",
+			"file": "settings",
+			"topic": "远程、桌面与通知",
+			"type": "string",
+			"label": "默认云环境",
+			"desc": "从 CLI 创建云端会话（如 claude --cloud）时默认使用的云环境 ID，/remote-env 会写入此键。自托管环境 ID（ccpool_ 开头）只在用户、托管配置或 --settings 中生效。",
+			"default": "未设置，优先用 Anthropic 托管环境",
+			"doc": "remote-defaultenvironmentid"
+		},
+		{
+			"key": "remoteControlAtStartup",
+			"file": "settings",
+			"topic": "远程、桌面与通知",
+			"type": "boolean",
+			"label": "启动时远程连接",
+			"desc": "每个交互会话启动时自动连接 Remote Control。项目或本地配置里的 true 会被忽略，只能用来关闭。",
+			"default": "未设置，按默认自动连接规则",
+			"doc": "remotecontrolatstartup"
+		},
+		{
+			"key": "sshConfigs",
+			"file": "settings",
+			"topic": "远程、桌面与通知",
+			"type": "json",
+			"label": "SSH 连接",
+			"desc": "为 Desktop 环境选择器预置 SSH 连接，每项需 id、name、sshHost，可选 sshPort、sshIdentityFile。只有桌面应用读取，只在用户或托管配置中生效。",
+			"default": "未设置",
+			"example": [
+				{
+					"id": "dev-vm",
+					"name": "Dev VM",
+					"sshHost": "user@dev.example.com"
+				}
+			],
+			"doc": "sshconfigs"
+		},
+		{
+			"key": "autoUpdatesChannel",
+			"file": "settings",
+			"topic": "更新与版本",
+			"type": "enum",
+			"options": [
+				{
+					"value": "latest",
+					"label": "最新版"
+				},
+				{
+					"value": "stable",
+					"label": "稳定版（约晚一周）"
+				}
+			],
+			"label": "更新渠道",
+			"desc": "后台自动更新和 claude update 跟随的发布渠道。stable 通常比最新版晚约一周并跳过有严重问题的版本。Homebrew 安装忽略此键；要完全关闭自动更新，在 env 里设 DISABLE_AUTOUPDATER。",
+			"default": "latest",
+			"doc": "autoupdateschannel"
+		},
+		{
+			"key": "minimumVersion",
+			"file": "settings",
+			"topic": "更新与版本",
+			"type": "string",
+			"label": "最低更新版本",
+			"desc": "自动更新和 claude update 不会安装低于此版本的版本，避免切到 stable 时降级。只限制更新；要拒绝启动低版本请用 requiredMinimumVersion。",
+			"default": "未设置",
+			"doc": "minimumversion"
+		},
+		{
+			"key": "autoConnectIde",
+			"file": "global",
+			"topic": "全局配置",
+			"type": "boolean",
+			"label": "自动连接 IDE",
+			"desc": "从外部终端启动时自动连接正在运行的 VS Code 或 JetBrains。在 IDE 内置终端或带 --ide 时始终会连接。",
+			"default": "false",
+			"doc": "autoconnectide"
+		},
+		{
+			"key": "autoInstallIdeExtension",
+			"file": "global",
+			"topic": "全局配置",
+			"type": "boolean",
+			"label": "自动安装 IDE 扩展",
+			"desc": "在 VS Code 终端中运行时自动安装 Claude Code IDE 扩展。",
+			"default": "true",
+			"doc": "autoinstallideextension"
+		},
+		{
+			"key": "claudeInChromeDefaultEnabled",
+			"file": "global",
+			"topic": "全局配置",
+			"type": "boolean",
+			"label": "默认启用 Chrome",
+			"desc": "每个交互式 CLI 会话都开启 Chrome 集成，相当于每次带 --chrome；v2.1.287 起也作用于 VS Code 扩展。设为 false 还会停止提示安装扩展。",
+			"default": "未设置（关闭）",
+			"doc": "claudeinchromedefaultenabled"
+		},
+		{
+			"key": "copyFullResponse",
+			"file": "global",
+			"topic": "全局配置",
+			"type": "boolean",
+			"label": "/copy 复制全文",
+			"desc": "/copy 总是直接复制完整回复，不再弹出选择代码块的菜单。",
+			"default": "false",
+			"doc": "copyfullresponse"
+		},
+		{
+			"key": "copyOnSelect",
+			"file": "global",
+			"topic": "全局配置",
+			"type": "boolean",
+			"label": "选中即复制",
+			"desc": "在全屏渲染或 agent 视图中用鼠标选中文本后自动复制到剪贴板。",
+			"default": "true",
+			"doc": "copyonselect"
+		},
+		{
+			"key": "defaultToAgentsView",
+			"file": "global",
+			"topic": "全局配置",
+			"type": "boolean",
+			"label": "默认进 agent 视图",
+			"desc": "不带参数运行 claude 时打开 agent 视图，而不是新建对话。agent 视图被关闭时无效。",
+			"default": "false",
+			"doc": "defaulttoagentsview"
+		},
+		{
+			"key": "diffTool",
+			"file": "global",
+			"topic": "全局配置",
+			"type": "enum",
+			"options": [
+				{
+					"value": "auto",
+					"label": "IDE diff 视图"
+				},
+				{
+					"value": "terminal",
+					"label": "终端内显示"
+				}
+			],
+			"label": "diff 显示位置",
+			"desc": "连接了 VS Code 或 JetBrains 时，Claude 提议的 Edit、Write 改动在 IDE 的 diff 视图中打开还是留在终端显示。",
+			"default": "auto",
+			"doc": "difftool"
+		},
+		{
+			"key": "externalEditorContext",
+			"file": "global",
+			"topic": "全局配置",
+			"type": "boolean",
+			"label": "外部编辑器带上回复",
+			"desc": "按 Ctrl+G 用外部编辑器写提示时，在开头以 # 注释附上 Claude 的上一条回复（最多 50 行），保存时自动去掉。",
+			"default": "false",
+			"doc": "externaleditorcontext"
+		},
+		{
+			"key": "hasCompletedOnboarding",
+			"file": "global",
+			"topic": "全局配置",
+			"type": "boolean",
+			"label": "跳过首次启动引导",
+			"desc": "官方文档未记载，但 Claude Code 实际会读取。设为 true 后不再显示首次启动引导（主题选择、登录等），常用于配置第三方 API 时。",
+			"doc": ""
+		},
+		{
+			"key": "leftArrowOpensAgents",
+			"file": "global",
+			"topic": "全局配置",
+			"type": "boolean",
+			"label": "← 打开 agent 视图",
+			"desc": "在空输入框按 ← 把当前会话转入后台并打开 agent 视图；设为 false 关闭此快捷键。",
+			"default": "true",
+			"doc": "leftarrowopensagents"
+		},
+		{
+			"key": "permissionExplainerEnabled",
+			"file": "global",
+			"topic": "全局配置",
+			"type": "boolean",
+			"label": "命令解释（已移除）",
+			"desc": "v2.1.257 起已移除，当前版本设置无效。v2.1.256 及更早版本中控制权限提示里 Ctrl+E 查看命令解释的功能。",
+			"default": "true",
+			"doc": "permissionexplainerenabled",
+			"removed": true
+		},
+		{
+			"key": "prStatusFooterEnabled",
+			"file": "global",
+			"topic": "全局配置",
+			"type": "boolean",
+			"label": "显示 PR 状态",
+			"desc": "在输入框页脚显示当前分支已打开 PR 或 MR 的徽章，下划线颜色表示审查状态。",
+			"default": "true",
+			"doc": "prstatusfooterenabled"
+		},
+		{
+			"key": "teammateDefaultModel",
+			"file": "global",
+			"topic": "全局配置",
+			"type": "string",
+			"suggestions": [
+				"sonnet",
+				"opus",
+				"haiku"
+			],
+			"label": "队友模型（已移除）",
+			"desc": "v2.1.234 起已移除，当前版本设置无效。v2.1.233 及更早版本中为未指定模型的 agent team 队友设默认模型，也可为 null 表示跟随主会话。",
+			"default": "未设置",
+			"doc": "teammatedefaultmodel",
+			"removed": true
+		}
+	]
+}
